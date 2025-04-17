@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LED Grid</title>
+  <style>
+    canvas {
+      border: 1px solid black;
+      margin: 20px;
+      background-color: #333;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="myCanvas" width="1300" height="900"></canvas>
+
+  <script>
+    const canvas = document.getElementById('myCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const GRID_SIZE = 40;
+    const GRID_SIZE_X = 65;
+    const GRID_SIZE_Y = 45;
+    const CELL_SIZE = 18; // Size of each LED cell
+    const PADDING = 2; // Space between cells
+
+    function drawLED(x, y) {
+      // Draw LED base (darker square)
+      ctx.fillStyle = '#222';
+      ctx.fillRect(
+        x * (CELL_SIZE + PADDING),
+        y * (CELL_SIZE + PADDING),
+        CELL_SIZE,
+        CELL_SIZE
+      );
+
+      // Draw LED light (brighter square)
+      ctx.fillStyle = '#444';
+      ctx.fillRect(
+        x * (CELL_SIZE + PADDING) + 1,
+        y * (CELL_SIZE + PADDING) + 1,
+        CELL_SIZE - 2,
+        CELL_SIZE - 2
+      );
+    }
+
+    // Draw the grid
+    for (let y = 0; y < GRID_SIZE_Y; y++) {
+      for (let x = 0; x < GRID_SIZE_X; x++) {
+        drawLED(x, y);
+      }
+    }
+  </script>
+</body>
+
+</html>
