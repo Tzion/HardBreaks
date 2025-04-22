@@ -30,13 +30,88 @@
     const canvas = document.getElementById('myCanvas');
     const ctx = canvas.getContext('2d');
 
-    const GRID_SIZE = 40;
     const GRID_SIZE_X = 65;
     const GRID_SIZE_Y = 45;
     const CELL_SIZE = 18; // Size of each LED cell
     const PADDING = 2; // Space between cells
 
-    function drawLED(x, y) {
+    // Shape system
+    class Shape {
+      constructor(points, color = '#ff0000') {
+        this.points = points;
+        this.color = color;
+        this.x = 0;
+        this.y = 0;
+        this.scale = 1;
+        this.rotation = 0;
+      }
+
+      setPosition(x, y) {
+        this.x = x;
+        this.y = y;
+        return this;
+      }
+
+      setScale(scale) {
+        this.scale = scale;
+        return this;
+      }
+
+      setRotation(rotation) {
+        this.rotation = rotation;
+        return this;
+      }
+
+      getTransformedPoints() {
+        const cos = Math.cos(this.rotation);
+        const sin = Math.sin(this.rotation);
+
+        return this.points.map(point => {
+          // Scale
+          let x = point.x * this.scale;
+          let y = point.y * this.scale;
+
+          // Rotate
+          const rotatedX = x * cos - y * sin;
+          const rotatedY = x * sin + y * cos;
+
+          // Translate
+          return {
+            x: rotatedX + this.x,
+            y: rotatedY + this.y
+          };
+        });
+      }
+    }
+
+    // Shape generators
+    const Shapes = {
+      heart: (size = 1) => {
+        const points = [];
+        const step = 0.1;
+        for (let t = 0; t < 2 * Math.PI; t += step) {
+          // Heart parametric equations
+          const x = 16 * Math.pow(Math.sin(t), 3);
+          const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+          points.push({ x: x * size, y: y * size });
+        }
+        return points;
+      },
+
+      circle: (radius = 1, segments = 32) => {
+        const points = [];
+        const step = (2 * Math.PI) / segments;
+        for (let t = 0; t < 2 * Math.PI; t += step) {
+          points.push({
+            x: radius * Math.cos(t),
+            y: radius * Math.sin(t)
+          });
+        }
+        return points;
+      }
+    };
+
+    function drawLED(x, y, color = '#444') {
       // Draw LED base (darker square)
       ctx.fillStyle = '#222';
       ctx.fillRect(
@@ -46,8 +121,8 @@
         CELL_SIZE
       );
 
-      // Draw LED light (brighter square)
-      ctx.fillStyle = '#444';
+      // Draw LED light
+      ctx.fillStyle = color;
       ctx.fillRect(
         x * (CELL_SIZE + PADDING) + 1,
         y * (CELL_SIZE + PADDING) + 1,
@@ -56,12 +131,73 @@
       );
     }
 
-    // Draw the grid
-    for (let y = 0; y < GRID_SIZE_Y; y++) {
-      for (let x = 0; x < GRID_SIZE_X; x++) {
-        drawLED(x, y);
+    function drawShape(shape) {
+      const points = shape.getTransformedPoints();
+      points.forEach(point => {
+        const gridX = Math.round(point.x);
+        const gridY = Math.round(point.y);
+        if (gridX >= 0 && gridX < GRID_SIZE_X && gridY >= 0 && gridY < GRID_SIZE_Y) {
+          drawLED(gridX, gridY, shape.color);
+        }
+      });
+    }
+
+    // Animation system
+    class Animation {
+      constructor() {
+        this.shapes = [];
+        this.time = 0;
+      }
+
+      addShape(shape) {
+        this.shapes.push(shape);
+        return this;
+      }
+
+      update(deltaTime) {
+        this.time += deltaTime;
+        // Example animation: rotating heart
+        this.shapes.forEach((shape, index) => {
+          shape.setRotation(this.time * 0.001)
+            .setScale(1 + Math.sin(this.time * 0.002) * 0.2);
+        });
+      }
+
+      draw() {
+        this.shapes.forEach(shape => drawShape(shape));
       }
     }
+
+    // Create animation
+    const animation = new Animation();
+    animation.addShape(
+      new Shape(Shapes.heart(0.3), '#ff0000')
+        .setPosition(GRID_SIZE_X / 2, GRID_SIZE_Y / 2)
+    );
+
+    // Draw the grid
+    function drawGrid() {
+      for (let y = 0; y < GRID_SIZE_Y; y++) {
+        for (let x = 0; x < GRID_SIZE_X; x++) {
+          drawLED(x, y);
+        }
+      }
+    }
+
+    // Animation loop
+    let lastTime = 0;
+    function animate(currentTime) {
+      const deltaTime = currentTime - lastTime;
+      lastTime = currentTime;
+
+      drawGrid();
+      animation.update(deltaTime);
+      animation.draw();
+
+      requestAnimationFrame(animate);
+    }
+
+    animate(0);
   </script>
 </body>
 
