@@ -1,8 +1,8 @@
 // @ts-nocheck
 // PARAMETERS - Change these values as needed
 const CM_RATIO = 1500 / 70; // multiple any numeric value to convert to real centimeters on the TV screen (e.g. 7 * CM_RATIO = 7 cm on the tv screen)
-const CANVAS_WIDTH = 1500; // 1500 equals 70 cm on the tv screen
-const CANVAS_HEIGHT = 1500;
+const CANVAS_WIDTH = 70 * CM_RATIO;
+const CANVAS_HEIGHT = 70 * CM_RATIO;
 
 let canvas;
 let ctx;
@@ -10,14 +10,16 @@ let ctx;
 function ledMatrix() {
   const strips = 70;
   for (let i = 0; i <= strips; i++) {
-    const strip = new LEDStrip();
-    strip.draw(0, i * CANVAS_HEIGHT / strips);
+    const strip = new LEDStrip(0, i * CANVAS_HEIGHT / strips, 70, 100, 0.12);
+    strip.draw();
   }
 }
 
 // LED Strip object
 class LEDStrip {
-  constructor(length = 70, numberOfChips = 100, width = .12) {
+  constructor(x, y, length = 70, numberOfChips = 100, width = .12) {
+    this.x = x;
+    this.y = y;
     this.length = length * CM_RATIO;
     this.numberOfChips = numberOfChips;
     this.width = width * CM_RATIO;
@@ -26,24 +28,21 @@ class LEDStrip {
 
     // Create array of chips
     this.chips = [];
-    const chipsPerRow = Math.floor(this.length / this.chipSize);
-    const totalChips = Math.min(chipsPerRow, this.numberOfChips);
 
-    for (let i = 0; i < totalChips; i++) {
-      this.chips.push(new LEDStrip.Chip(i * this.chipSize, 0, this.chipSize, '#333'));
+    const distanceBetweenChips = this.length / (this.numberOfChips - 1);
+    for (let i = 0; i < this.numberOfChips; i++) {
+      this.chips.push(new LEDStrip.Chip(i * (this.chipSize + distanceBetweenChips), this.y, this.chipSize));
     }
   }
 
-  draw(x, y) {
+  draw() {
     // Draw strip border
     ctx.strokeStyle = this.stripColor;
     ctx.lineWidth = 0.4;
-    ctx.strokeRect(x, y, this.length, this.width);
-
-    // Create and draw chips
-    for (let i = 0; i < this.numberOfChips; i++) {
-      const chipX = x + (i * this.length / (this.numberOfChips - 1));
-      new LEDStrip.Chip(chipX, y + (this.width - this.chipSize) / 2, this.chipSize, '#733');
+    ctx.strokeRect(this.x, this.y, this.length, this.width);
+    for (let chip of this.chips) {
+      const color = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+      chip.draw(color);
     }
   }
 
@@ -53,12 +52,10 @@ class LEDStrip {
       this.x = x;
       this.y = y;
       this.size = size;
-      this.color = color;
-      this.draw();
     }
 
-    draw() {
-      ctx.fillStyle = this.color;
+    draw(color) {
+      ctx.fillStyle = color;
       ctx.fillRect(this.x, this.y, this.size, this.size);
     }
   }
