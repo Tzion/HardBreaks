@@ -34,7 +34,8 @@ class LEDStrip {
 
     // Create and draw chips
     for (let i = 0; i < this.numberOfChips; i++) {
-      new LEDStrip.Chip(x + (i * this.chipSize), y + (this.width - this.chipSize) / 2, this.chipSize, '#733');
+      const chipX = x + (i * this.length / (this.numberOfChips - 1));
+      new LEDStrip.Chip(chipX, y + (this.width - this.chipSize) / 2, this.chipSize, '#733');
     }
   }
 
@@ -50,7 +51,7 @@ class LEDStrip {
 
     draw() {
       ctx.fillStyle = this.color;
-      ctx.fillRect(this.x, this.y, this.size / 2, this.size / 2);
+      ctx.fillRect(this.x, this.y, this.size, this.size);
     }
   }
 }
