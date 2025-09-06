@@ -7,6 +7,14 @@ const CANVAS_HEIGHT = 1500;
 let canvas;
 let ctx;
 
+function ledMatrix() {
+  const strips = 70;
+  for (let i = 0; i <= strips; i++) {
+    const strip = new LEDStrip();
+    strip.draw(0, i * CANVAS_HEIGHT / strips);
+  }
+}
+
 // LED Strip object
 class LEDStrip {
   constructor(length = 70, numberOfChips = 100, width = .12) {
