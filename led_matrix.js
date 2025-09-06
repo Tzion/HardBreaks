@@ -1,8 +1,11 @@
 // @ts-nocheck
 // PARAMETERS - Change these values as needed
-const CM_RATIO = 1500 / 70; // multiple any numeric value to convert to real centimeters on the TV screen (e.g. 7 * CM_RATIO = 7 cm on the tv screen)
+const CM_RATIO = 1800 / 70; // multiple any numeric value to convert to real centimeters on the TV screen (e.g. 7 * CM_RATIO = 7 cm on the tv screen)
 const CANVAS_WIDTH = 70 * CM_RATIO;
 const CANVAS_HEIGHT = 70 * CM_RATIO;
+const STRIP_LENGTH = 70
+const LEDS_PER_METER = 60
+const NUMBER_OF_LEDS = STRIP_LENGTH / 100 * LEDS_PER_METER
 
 let canvas;
 let ctx;
@@ -10,14 +13,14 @@ let ctx;
 function ledMatrix() {
   const strips = 70;
   for (let i = 0; i <= strips; i++) {
-    const strip = new LEDStrip(0, i * CANVAS_HEIGHT / strips, 70, 100, 0.12);
+    const strip = new LEDStrip(0, i * CANVAS_HEIGHT / strips, STRIP_LENGTH, NUMBER_OF_LEDS);
     strip.draw();
   }
 }
 
 // LED Strip object
 class LEDStrip {
-  constructor(x, y, length = 70, numberOfChips = 100, width = .12) {
+  constructor(x, y, length = 70, numberOfChips = 60, width = .12) {
     this.x = x;
     this.y = y;
     this.length = length * CM_RATIO;
