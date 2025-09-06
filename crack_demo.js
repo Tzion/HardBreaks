@@ -1,4 +1,4 @@
-// RUM: canvas-sketch 
+// RUM: canvas-sketch crack_demo.js --open
 const canvasSketch = require('canvas-sketch');
 const random = require('canvas-sketch-util/random')
 const { Point } = require('./geometry');
