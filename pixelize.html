@@ -9,6 +9,31 @@
   <input type="file" id="imageInput" accept="image/*">
   <canvas id="canvas"></canvas>
   <script>
+    function getAverageColor(img, startX, startY, width, height) {
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCanvas.width = width;
+      tempCanvas.height = height;
+      tempCtx.drawImage(img, startX, startY, width, height, 0, 0, width, height);
+
+      const imageData = tempCtx.getImageData(0, 0, width, height);
+      const data = imageData.data;
+
+      let r = 0, g = 0, b = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        r += data[i];
+        g += data[i + 1];
+        b += data[i + 2];
+      }
+
+      const pixelCount = data.length / 4;
+      r = Math.round(r / pixelCount);
+      g = Math.round(g / pixelCount);
+      b = Math.round(b / pixelCount);
+
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+
     document.getElementById('imageInput').addEventListener('change', (e) => {
       if (e.target.files[0]) {
         const reader = new FileReader();
@@ -17,9 +42,22 @@
           img.onload = () => {
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
+
+            const gridX = 10;
+            const gridY = 10;
+            const cellWidth = img.width / gridX;
+            const cellHeight = img.height / gridY;
+
+            canvas.width = gridX * 20;
+            canvas.height = gridY * 20;
+
+            for (let y = 0; y < gridY; y++) {
+              for (let x = 0; x < gridX; x++) {
+                const color = getAverageColor(img, x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                ctx.fillStyle = color;
+                ctx.fillRect(x * 20, y * 20, 20, 20);
+              }
+            }
           };
           img.src = e.target.result;
         };
