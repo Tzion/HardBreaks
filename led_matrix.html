@@ -29,7 +29,10 @@
   <script>
     initCanvas();
     showGrid();
-    new LEDStrip().draw(0, 0);
+
+    // Debug: Create and draw a test strip
+    const testStrip = new LEDStrip(70, 20, .12);
+    testStrip.draw(100, 100);
   </script>
 </body>
 

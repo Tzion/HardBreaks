@@ -9,15 +9,49 @@ let ctx;
 
 // LED Strip object
 class LEDStrip {
-  constructor(length = 70 * CM_RATIO, ledsCount = 100, width = .10 * CM_RATIO) {
-    this.length = length;
-    this.ledsCount = ledsCount;
-    this.width = width;
+  constructor(length = 70, numberOfChips = 100, width = .12) {
+    this.length = length * CM_RATIO;
+    this.numberOfChips = numberOfChips;
+    this.width = width * CM_RATIO;
+    this.stripColor = '#fff';
+    this.chipSize = .5 * CM_RATIO; // 0.5cm chip size
+
+    // Create array of chips
+    this.chips = [];
+    const chipsPerRow = Math.floor(this.length / this.chipSize);
+    const totalChips = Math.min(chipsPerRow, this.numberOfChips);
+
+    for (let i = 0; i < totalChips; i++) {
+      this.chips.push(new LEDStrip.Chip(i * this.chipSize, 0, this.chipSize, '#333'));
+    }
   }
 
   draw(x, y) {
-    ctx.fillStyle = '#00ff00';
-    ctx.fillRect(x, y, this.length, this.width);
+    // Draw strip border
+    ctx.strokeStyle = this.stripColor;
+    ctx.lineWidth = 0.4;
+    ctx.strokeRect(x, y, this.length, this.width);
+
+    // Create and draw chips
+    for (let i = 0; i < this.numberOfChips; i++) {
+      new LEDStrip.Chip(x + (i * this.chipSize), y + (this.width - this.chipSize) / 2, this.chipSize, '#733');
+    }
+  }
+
+  // Nested Chip class
+  static Chip = class {
+    constructor(x, y, size, color) {
+      this.x = x;
+      this.y = y;
+      this.size = size;
+      this.color = color;
+      this.draw();
+    }
+
+    draw() {
+      ctx.fillStyle = this.color;
+      ctx.fillRect(this.x, this.y, this.size / 2, this.size / 2);
+    }
   }
 }
 
