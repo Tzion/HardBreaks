@@ -1,7 +1,13 @@
-// RUM: canvas-sketch crack_demo.js --open
+// TO RUN: canvas-sketch crack_demo.js --open
 const canvasSketch = require('canvas-sketch');
 const random = require('canvas-sketch-util/random')
-const { Point } = require('./geometry');
+
+class Point {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+}
 
 const settings = {
   dimensions: [1080, 1080],
