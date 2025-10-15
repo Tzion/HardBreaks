@@ -7,6 +7,11 @@
 
 <body>
   <input type="file" id="imageInput" accept="image/*">
+  <br><br>
+  <label for="gridSize">Grid Size: </label>
+  <input type="range" id="gridSize" min="5" max="50" value="10">
+  <span id="gridValue">10</span>
+  <br><br>
   <canvas id="canvas"></canvas>
   <script>
     function getAverageColor(img, startX, startY, width, height) {
@@ -34,35 +39,50 @@
       return `rgb(${r}, ${g}, ${b})`;
     }
 
+    let currentImage = null;
+
+    function pixelizeImage() {
+      if (!currentImage) return;
+
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+
+      const gridSize = parseInt(document.getElementById('gridSize').value);
+      const gridX = gridSize;
+      const gridY = gridSize;
+      const cellWidth = currentImage.width / gridX;
+      const cellHeight = currentImage.height / gridY;
+
+      canvas.width = gridX * 20;
+      canvas.height = gridY * 20;
+
+      for (let y = 0; y < gridY; y++) {
+        for (let x = 0; x < gridX; x++) {
+          const color = getAverageColor(currentImage, x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+          ctx.fillStyle = color;
+          ctx.fillRect(x * 20, y * 20, 20, 20);
+        }
+      }
+    }
+
     document.getElementById('imageInput').addEventListener('change', (e) => {
       if (e.target.files[0]) {
         const reader = new FileReader();
         reader.onload = (e) => {
           const img = new Image();
           img.onload = () => {
-            const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
-
-            const gridX = 10;
-            const gridY = 10;
-            const cellWidth = img.width / gridX;
-            const cellHeight = img.height / gridY;
-
-            canvas.width = gridX * 20;
-            canvas.height = gridY * 20;
-
-            for (let y = 0; y < gridY; y++) {
-              for (let x = 0; x < gridX; x++) {
-                const color = getAverageColor(img, x * cellWidth, y * cellHeight, cellWidth, cellHeight);
-                ctx.fillStyle = color;
-                ctx.fillRect(x * 20, y * 20, 20, 20);
-              }
-            }
+            currentImage = img;
+            pixelizeImage();
           };
           img.src = e.target.result;
         };
         reader.readAsDataURL(e.target.files[0]);
       }
+    });
+
+    document.getElementById('gridSize').addEventListener('input', (e) => {
+      document.getElementById('gridValue').textContent = e.target.value;
+      pixelizeImage();
     });
   </script>
 </body>
