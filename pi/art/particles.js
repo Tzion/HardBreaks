@@ -1,0 +1,1 @@
+// Generative art sketch stub: produces particle-based frames for the LED matrix.

@@ -1,0 +1,1 @@
+// Orchestrates the render loop on the Pi: generate → pixelize → transmit at the configured FPS.

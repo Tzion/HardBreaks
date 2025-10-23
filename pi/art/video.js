@@ -1,0 +1,1 @@
+// Video playback source stub: reads frames from a video file/stream to feed the LED matrix.

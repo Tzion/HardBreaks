@@ -1,0 +1,1 @@
+// Converts a source frame into a 49x39 RGB buffer, handling downscaling and any optional color correction.

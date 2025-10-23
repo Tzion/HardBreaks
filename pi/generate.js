@@ -1,0 +1,1 @@
+// Generates animation frames on the Pi (e.g., via canvas-sketch or video), exposing an API to retrieve the next frame.
