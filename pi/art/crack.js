@@ -12,13 +12,13 @@ class Point {
 const settings = {
   dimensions: [1080, 1080],
   animate: false,
-  fps: 3
+  fps: 1
 };
 
 const sketch = ({ context, width, height }) => {
-    /** @type {CanvasRenderingContext2D} */
-    const ctxs = context;
-    ctxs.beginPath
+  /** @type {CanvasRenderingContext2D} */
+  const ctxs = context;
+  ctxs.beginPath
   const crack = new Crack(new Point(50 + random.range(width - 50), 0), new Point(50 + random.range(width - 50), height));
   console.log(crack);
   return ({ context, width, height }) => {
@@ -105,5 +105,12 @@ class Crack {
   }
 }
 
+const isBrowser = typeof window !== 'undefined'
+if (isBrowser) {
+  canvasSketch(sketch, settings);
+}
 
-canvasSketch(sketch, settings);
+module.exports = sketch;
+module.exports = settings;
+
+
