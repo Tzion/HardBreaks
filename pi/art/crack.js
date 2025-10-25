@@ -9,12 +9,6 @@ class Point {
   }
 }
 
-const settings = {
-  dimensions: [1080, 1080],
-  animate: false,
-  fps: 1
-};
-
 const sketch = ({ context, width, height }) => {
   /** @type {CanvasRenderingContext2D} */
   const ctxs = context;
@@ -107,10 +101,14 @@ class Crack {
 
 const isBrowser = typeof window !== 'undefined'
 if (isBrowser) {
+  const settings = {
+    dimensions: [1080, 1080],
+    animate: false,
+    fps: 1
+  };
   canvasSketch(sketch, settings);
 }
 
+// Export for Node runtime (ensure we don't clobber the sketch export)
 module.exports = sketch;
-module.exports = settings;
-
 

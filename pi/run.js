@@ -1,35 +1,26 @@
 // Orchestrates the render loop on the Pi: generate → pixelize → transmit at the configured FPS.
+const canvasSketch = require('canvas-sketch');
+const { createCanvas } = require('canvas');
+const { transmit } = require('./transmit');
+const crackAnimation = require('./art/crack');
 
-import canvasSketch from 'canvas-sketch';
-import { connect, send } from './transmit';
-import crackAnimation from './art/crack';
+async function runSketchAnimation(sketchAnimation, settings) {
+    const [width, height] = settings.dimensions;
+    const canvas = createCanvas(width, height);
 
-
-async function runSketchAnimation(sketchAnimation, settings = {}) {
     const manager = await canvasSketch(sketchAnimation, {
         ...settings,
-        animate: true
+        canvas
     });
 
-    const { canvas, context } = manager.props;
-
-    // Connect to hardware
-    await connect();
-
-    // Override render to capture frames
-    const originalRender = manager.render.bind(manager);
-    manager.render = () => {
-        const result = originalRender();
-
-        // Extract and send frame
-        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-        debugger;
-        send(imageData.data);
-
-        return result;
-    };
-
-    manager.play();
+    const { context } = manager.props;
+    await transmit.connect();
+    
+    setInterval(() => {
+        manager.render();
+        const imageData = context.getImageData(0, 0, width, height);
+        transmit.send(imageData.data);
+    }, 1000 / settings.fps);
 }
 
 const settings = {
