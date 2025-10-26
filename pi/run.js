@@ -3,6 +3,7 @@ const canvasSketch = require('canvas-sketch');
 const { createCanvas } = require('canvas');
 const { transmit } = require('./transmit');
 const crackAnimation = require('./art/crack');
+const pixelize = require('./pixelize')
 
 async function runSketchAnimation(sketchAnimation, settings) {
     const [width, height] = settings.dimensions;
@@ -19,7 +20,8 @@ async function runSketchAnimation(sketchAnimation, settings) {
     setInterval(() => {
         manager.render();
         const imageData = context.getImageData(0, 0, width, height);
-        transmit.send(imageData.data);
+        const downScaled = pixelize.scaleDown(imageData, 49, 39);
+        transmit.send(downScaled.data);
     }, 1000 / settings.fps);
 }
 
