@@ -1,6 +1,10 @@
 // @ts-nocheck
-// PARAMETERS - Change these values as needed
-const CM_RATIO = 1800 / 70; // multiple centimeter values to convert to real centimeters on the TV screen (e.g. 7 * CM_RATIO = 7 cm on the tv screen)
+import config_general from '../../config.js';
+
+
+const config = config_general.sinks.simulator
+const ratio_factor = config.ratio_factors[config.ratio_factors.key]
+const CM_RATIO = 1800 / ratio_factor; // multiple centimeter values to convert to real centimeters on the TV screen (e.g. 7 * CM_RATIO = 7 cm on the tv screen)
 const CANVAS_WIDTH = 80 * CM_RATIO;
 const CANVAS_HEIGHT = 65 * CM_RATIO;
 const STRIP_LENGTH = 80

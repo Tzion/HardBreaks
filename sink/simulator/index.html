@@ -1,5 +1,5 @@
 <!-- Simple HTML canvas simulator for the 49x39 LED matrix; runs in a browser to preview frames without hardware. -->
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -26,8 +26,7 @@
 <body>
   <canvas id="ledCanvas"></canvas>
 
-  <script src="led_matrix.js"></script>
-  <script>
+  <script type="module" src="led_matrix.js">
     initCanvas();
     showGrid();
     ledMatrix();
