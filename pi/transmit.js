@@ -1,24 +1,34 @@
-const crypto = require('crypto');
-
 // Sends the 49x39 RGB buffer from the Pi to a selected sink (e.g., serial or UDP); manages connection lifecycle.
+const crypto = require('crypto');
+const config = require('../config');
 
-// Simple local stub to verify frames are sent
+class SimulatorTransmitter {
+  connect() {}
+  send(data) {}
+  disconnect() {}
+}
+
 let frame = 0;
+const transmitters = []
 
 async function connect() {
-  console.log('transit.connect()');
+  if (config.sinks.simulator.enabled) transmitters.push(new SimulatorTransmitter());
+  transmitters.forEach(t => t.connect());
+  console.log(transmitters.length ? "All transmitters connected" : "No transmitters to connect");
 }
 
 function send(data) {
   frame++;
-  const len = data && typeof data.length === 'number' ? data.length : 0;
+  const len = data?.length || 0;
   const hash = data ? crypto.createHash('sha256').update(data).digest('hex') : '';
-  console.log(`transit.send() frame=${frame} bytes=${len} hash=${hash}`);
+  console.log(`transmit.send() frame=${frame} bytes=${len} hash=${hash}`);
+  transmitters.forEach(t => t.send(data));
 }
 
 function disconnect() {
-  console.log('transit.disconnect()');
+  transmitters.forEach(t => t.disconnect());
+  console.log('transmit.disconnect()');
 }
 
-const transmit = { connect, send, disconnect };
-module.exports = { transmit };
+// const transmit = { connect, send, disconnect };
+module.exports = { connect, send, disconnect };

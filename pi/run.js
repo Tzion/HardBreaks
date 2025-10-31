@@ -1,7 +1,7 @@
 // Orchestrates the render loop on the Pi: generate → pixelize → transmit at the configured FPS.
 const canvasSketch = require('canvas-sketch');
 const { createCanvas } = require('canvas');
-const { transmit } = require('./transmit');
+const  transmit  = require('./transmit');
 const crackAnimation = require('./art/crack');
 const pixelize = require('./pixelize')
 

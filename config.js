@@ -1,1 +1,15 @@
 // Root configuration for matrix dimensions, frame rate, and connection settings used by the Pi runtime.
+module.exports = {
+    matrix: { width: 49, height: 39 },
+    fps: 30,
+    sinks: {
+        simulator: {
+            enabled: true,
+            ratio_factors: {
+                key: "laptop",
+                laptop: 130,
+                tv: 70
+            }
+        }
+    }
+}
