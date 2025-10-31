@@ -5,10 +5,10 @@ export default {
     sinks: {
         simulator: {
             enabled: true,
+            screen: "laptop",
             ratio_factors: {
-                key: "laptop",
                 laptop: 130,
-                tv: 70
+                tv: 70,
             }
         }
     }
