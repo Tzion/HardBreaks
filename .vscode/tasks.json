@@ -1,0 +1,15 @@
+{
+  // Tasks to support launching the browser simulator
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "serve-simulator",
+      "type": "shell",
+      "command": "python3",
+      "args": ["-m", "http.server", "8000"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+    }
+  ]
+}
