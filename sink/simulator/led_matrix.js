@@ -1,9 +1,10 @@
 // @ts-nocheck
-import config_general from '../../config.js';
+// import config_general from '../../config.js';
 
 
-const config = config_general.sinks.simulator
-const ratio_factor = config.ratio_factors[config.ratio_factors.key]
+// const config = config_general.sinks.simulator
+// const ratio_factor = config.ratio_factors[config.ratio_factors.key]
+const ratio_factor = 123
 const CM_RATIO = 1800 / ratio_factor; // multiple centimeter values to convert to real centimeters on the TV screen (e.g. 7 * CM_RATIO = 7 cm on the tv screen)
 const CANVAS_WIDTH = 80 * CM_RATIO;
 const CANVAS_HEIGHT = 65 * CM_RATIO;

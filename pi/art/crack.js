@@ -1,6 +1,6 @@
 // TO RUN: canvas-sketch crack_demo.js --open
-const canvasSketch = require('canvas-sketch');
-const random = require('canvas-sketch-util/random')
+import canvasSketch from 'canvas-sketch';
+import random from 'canvas-sketch-util/random.js';
 
 class Point {
   constructor(x, y) {
@@ -109,6 +109,5 @@ if (isBrowser) {
   canvasSketch(sketch, settings);
 }
 
-// Export for Node runtime (ensure we don't clobber the sketch export)
-module.exports = sketch;
-
+// Export for Node runtime
+export default sketch;

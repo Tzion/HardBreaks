@@ -1,11 +1,11 @@
 // Sends the 49x39 RGB buffer from the Pi to a selected sink (e.g., serial or UDP); manages connection lifecycle.
-const crypto = require('crypto');
-const config = require('../config');
+import crypto from 'crypto';
+import config from '../config.js';
 
 class SimulatorTransmitter {
-  connect() {}
-  send(data) {}
-  disconnect() {}
+  connect() { }
+  send(data) { }
+  disconnect() { }
 }
 
 let frame = 0;
@@ -30,5 +30,4 @@ function disconnect() {
   console.log('transmit.disconnect()');
 }
 
-// const transmit = { connect, send, disconnect };
-module.exports = { connect, send, disconnect };
+export { connect, send, disconnect };

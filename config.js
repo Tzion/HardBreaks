@@ -1,5 +1,5 @@
 // Root configuration for matrix dimensions, frame rate, and connection settings used by the Pi runtime.
-module.exports = {
+export default {
     matrix: { width: 49, height: 39 },
     fps: 30,
     sinks: {
@@ -12,4 +12,4 @@ module.exports = {
             }
         }
     }
-}
+};
