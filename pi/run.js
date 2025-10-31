@@ -22,7 +22,7 @@ async function runSketchAnimation(sketchAnimation, settings) {
         manager.render();
         const imageData = context.getImageData(0, 0, width, height);
         const downScaled = pixelize.scaleDown(imageData, 49, 39);
-        const packets = toRGB(downScaled.data);
+        const packets = toRGB(downScaled);
         transmit.send(packets);
     }, 1000 / settings.fps);
 }

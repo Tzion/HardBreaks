@@ -7,7 +7,7 @@ class SerialTransmitter {
   constructor(path = config.serial.path, baudRate = config.serial.baudRate) {
     this.path = path;
     this.baudRate = baudRate;
-    // this.port = null
+    this.port = null
   }
 
   async connect() {
@@ -42,7 +42,7 @@ let frame = 0;
 const transmitters = []
 
 async function connect() {
-  if (config.sinks.serial.enabled)
+  if (config.serial.enabled)
     transmitters.push(new SerialTransmitter(config.serial.path, config.serial.baudRate));
   transmitters.forEach(t => t.connect());
   console.log(transmitters.length ? "All transmitters connected" : "No transmitters to connect");

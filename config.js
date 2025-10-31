@@ -4,7 +4,7 @@ export default {
     fps: 30,
     serial: {
         enabled: true,
-        path: "/dev/tty.usbmodem1101", // update after the path of the controller
+        path: "/dev/tty.usbmodem101", // update after the path of the controller
         baudRate: 115200,
     },
     sinks: {

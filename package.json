@@ -4,6 +4,7 @@
     "canvas": "^3.2.0",
     "canvas-sketch": "^0.7.7",
     "canvas-sketch-util": "^1.10.0",
+    "serialport": "^13.0.0",
     "tweakpane": "^4.0.5"
   }
 }
