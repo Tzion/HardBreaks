@@ -4,6 +4,7 @@ import { createCanvas } from 'canvas';
 import * as transmit from './transmit.js';
 import crackAnimation from './art/crack.js';
 import * as pixelize from './pixelize.js';
+import { toRGB } from './frame.js';
 
 async function runSketchAnimation(sketchAnimation, settings) {
     const [width, height] = settings.dimensions;
@@ -21,7 +22,8 @@ async function runSketchAnimation(sketchAnimation, settings) {
         manager.render();
         const imageData = context.getImageData(0, 0, width, height);
         const downScaled = pixelize.scaleDown(imageData, 49, 39);
-        transmit.send(downScaled.data);
+        const packets = toRGB(downScaled.data);
+        transmit.send(packets);
     }, 1000 / settings.fps);
 }
 

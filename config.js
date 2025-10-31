@@ -2,6 +2,11 @@
 export default {
     matrix: { width: 49, height: 39 },
     fps: 30,
+    serial: {
+        enabled: true,
+        path: "/dev/tty.usbmodem1101", // update after the path of the controller
+        baudRate: 115200,
+    },
     sinks: {
         simulator: {
             enabled: true,

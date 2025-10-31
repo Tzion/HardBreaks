@@ -1,5 +1,5 @@
 // Downscale ImageData to a smaller canvas and return that canvas (Approach A).
-import  {createCanvas}  from 'canvas';
+import { createCanvas } from 'canvas';
 
 export function scaleDown(imageData, targetWidth = 49, targetHeight = 39) {
     if (!imageData || !imageData.data || typeof imageData.width !== 'number' || typeof imageData.height !== 'number') {
@@ -19,6 +19,6 @@ export function scaleDown(imageData, targetWidth = 49, targetHeight = 39) {
 
     // Draw (and thus downscale) into the destination canvas
     dctx.drawImage(srcCanvas, 0, 0, targetWidth, targetHeight);
-    const downScaledImage = dstCanvas.context.getImageData(0, 0, targetWidth, targetHeight)
+    const downScaledImage = dctx.getImageData(0, 0, targetWidth, targetHeight);
     return downScaledImage;
 }
