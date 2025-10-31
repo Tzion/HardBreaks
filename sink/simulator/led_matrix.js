@@ -10,16 +10,24 @@ const CANVAS_WIDTH = 80 * CM_RATIO;
 const CANVAS_HEIGHT = 65 * CM_RATIO;
 const STRIP_LENGTH = 80
 const LEDS_PER_METER = 60
+// These used to calculate the matrix from the strucutre dimensions
 const NUMBER_OF_LEDS = STRIP_LENGTH / 100 * LEDS_PER_METER
 const NUMBER_OF_STRIPS = 42
+
+const width = 49 //config_general.matrix.width;
+const height = 39;//config_general.matrix.height;
 
 let canvas;
 let ctx;
 
 function ledMatrix() {
-  const strips = NUMBER_OF_STRIPS;
+  const strips = height;
   for (let i = 0; i <= strips; i++) {
-    const strip = new LEDStrip(0, i * CANVAS_HEIGHT / strips + (CANVAS_HEIGHT / strips / 2), STRIP_LENGTH, NUMBER_OF_LEDS);
+    const strip = new LEDStrip(0,
+      i * CANVAS_HEIGHT / strips + (CANVAS_HEIGHT / strips / 2),
+      STRIP_LENGTH,
+      width
+    );
     strip.draw();
   }
 }
