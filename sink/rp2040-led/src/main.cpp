@@ -10,22 +10,13 @@ void diagnoseFrame(uint8_t* frame);
 
 void setup() {
   Serial.begin(SERIAL_BAUD);
-  while (!Serial && millis() < 3000);
-  
-  pinMode(ONBOARD_LED, OUTPUT);
-  
-  // Fast startup blinks
-  for (int i = 0; i < 5; i++) {
-    digitalWrite(ONBOARD_LED, HIGH);
-    delay(100);
-    digitalWrite(ONBOARD_LED, LOW);
-    delay(100);
-  }
+  while (!Serial && millis() < 2000);
+  if (Serial) blink(3000, 10);
+  blink(2000, 1);
   Serial.println("RP2040 ready");
 }
 
 void loop() {
-  Serial.println("RP2040 loop");
   if (Serial.available() >= FRAME_SIZE) {
     size_t n = Serial.readBytes(frameBuffer, FRAME_SIZE);
     if (n != FRAME_SIZE) return;
