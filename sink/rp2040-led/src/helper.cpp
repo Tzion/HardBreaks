@@ -1,0 +1,22 @@
+#include <Arduino.h>
+#include "helper.h"
+
+void blink(unsigned int duration_ms, unsigned int freq_hz) {
+  if (freq_hz == 0) return;
+
+  pinMode(ONBOARD_LED, OUTPUT);
+  digitalWrite(ONBOARD_LED, LOW);
+
+  unsigned int half_period = 500 / freq_hz; // half period in ms
+  unsigned int elapsed = 0;
+  bool state = false;
+
+  while (elapsed < duration_ms) {
+    state = !state;
+    digitalWrite(ONBOARD_LED, state);
+    delay(half_period);
+    elapsed += half_period;
+  }
+
+  digitalWrite(ONBOARD_LED, LOW); // ensure LED is off at end
+}
