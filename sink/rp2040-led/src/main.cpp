@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <Arduino.h>
 
+#undef LED_BUILTIN
+#define LED_BUILTIN 17
 #define ONBOARD_LED LED_BUILTIN
 
 
@@ -26,8 +28,21 @@ void setup() {
   Serial.println("RP2040 ready");
 }
 
-void loop() {
-  Serial.println("RP2040 loop");
+void loop(){
+  // find the onboard pin led by iterating each io for 1 second
+   for (int pin = 0; pin <= 29; pin++) {
+    pinMode(pin, OUTPUT);
+    Serial.printf("pin %d is on\n", pin);
+    digitalWrite(pin, HIGH);
+    delay(1000);
+    digitalWrite(pin, LOW);
+    Serial.printf("onbaord led at: %d,  buildin led: %d\n", ONBOARD_LED, LED_BUILTIN);
+  }
+  
+}
+
+void old_loop() {
+  Serial.println("RP2040 loop2");
   if (Serial.available() >= FRAME_SIZE) {
     size_t n = Serial.readBytes(frameBuffer, FRAME_SIZE);
     if (n != FRAME_SIZE) return;
