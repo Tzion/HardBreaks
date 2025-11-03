@@ -1,5 +1,9 @@
 {
   "type": "module",
+  "scripts": {
+    "config:h": "node pi/generate-config-h.js",
+    "upload:rp2040": "npm run config:h && cd sink/rp2040-led && pio run -t upload"
+  },
   "dependencies": {
     "canvas": "^3.2.0",
     "canvas-sketch": "^0.7.7",

@@ -26,6 +26,20 @@
             "runtimeArgs": [
                 "--new-window"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Upload RP2040",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "runtimeExecutable": "npm",
+            "args": [
+                "run",
+                "upload:rp2040"
+            ],
+            "console": "integratedTerminal"
         }
     ]
 }
