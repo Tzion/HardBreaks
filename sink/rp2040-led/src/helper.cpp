@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "helper.h"
+#include "debug.h"
 
 void blink(unsigned int duration_ms, unsigned int freq_hz)
 {
@@ -25,5 +26,5 @@ void blink(unsigned int duration_ms, unsigned int freq_hz)
     elapsed += half_period;
   }
   digitalWrite(ONBOARD_LED, LOW); // ensure LED is off at end
-  Serial.printf("blink took %d, should have taked %d\n", millis()-start, duration_ms);
+  printf("blink took %d, should have taken %d\n", millis()-start, duration_ms);
 }
