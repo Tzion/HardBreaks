@@ -8,9 +8,12 @@
 #define FRAME_SIZE 1
 #define HEARTBEAT_MS 6000
 #define LED_PIN 2
-#define NUM_LEDS 39  // Adjust to your actual number of LEDs
+#define NUM_LEDS 39*7  // Adjust to your actual number of LEDs
 #define LED_TYPE WS2815
 #define COLOR_ORDER GRB
+#define STRIP_5 10
+#define STRIP_6 14
+#define STRIP_7 15
 
 CRGB leds[NUM_LEDS];
 uint8_t hue = 0;
@@ -34,8 +37,10 @@ void setup()
   pinMode(LED_PIN, OUTPUT);
   
   // Initialize FastLED
-  FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
-  FastLED.setBrightness(50);  // Set brightness (0-255)
+  FastLED.addLeds<LED_TYPE, STRIP_5, COLOR_ORDER>(leds, NUM_LEDS);
+  FastLED.addLeds<LED_TYPE, STRIP_6, COLOR_ORDER>(leds, NUM_LEDS);
+  FastLED.addLeds<LED_TYPE, STRIP_7, COLOR_ORDER>(leds, NUM_LEDS);
+  FastLED.setBrightness(50);
 
   Serial.begin(SERIAL_BAUD);
   while (!Serial && millis() < 5600)
