@@ -3,9 +3,17 @@
 #include <Arduino.h>
 #include "helper.h"
 #include "debug.h"
+#include <FastLED.h>
 
 #define FRAME_SIZE 1
 #define HEARTBEAT_MS 6000
+#define LED_PIN 4
+#define NUM_LEDS 39  // Adjust to your actual number of LEDs
+#define LED_TYPE WS2815
+#define COLOR_ORDER GRB
+
+CRGB leds[NUM_LEDS];
+uint8_t hue = 0;
 
 uint8_t frameBuffer[FRAME_SIZE];
 uint32_t frameCount = 0;
@@ -17,19 +25,33 @@ void setPinsToOutput();
 void setup()
 {
   pinMode(ONBOARD_LED, OUTPUT);
-  setPinsToOutput();
+  pinMode(5, OUTPUT);
+  pinMode(4, OUTPUT);
+  pinMode(6, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
+  
+  // Initialize FastLED
+  FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
+  FastLED.setBrightness(50);  // Set brightness (0-255)
 
   Serial.begin(SERIAL_BAUD);
-  while (!Serial && millis() < 7800)
+  while (!Serial && millis() < 5600)
     ;
   if (Serial)
-    blink(3000, 10);
+    blink(3000, 17);
   Serial.println("RP2040 ready");
   printf("frame size: %d\n", FRAME_SIZE);
 }
 
 void loop()
 {
+  digitalWrite(4, HIGH);
+  digitalWrite(5, HIGH);
+  digitalWrite(6, HIGH);
+  // Simple rainbow animation
+  fill_rainbow(leds, NUM_LEDS, hue, 7);
+  FastLED.show();
+  hue++;
 
   if (Serial.available() >= FRAME_SIZE)
   {
@@ -39,8 +61,6 @@ void loop()
 
     frameCount++;
 
-    //digitalWrite(5, HIGH);
-    // Blink logic to indicate continous communication
     if (frameCount % 10 == 0)
     {
       digitalWrite(ONBOARD_LED, HIGH);
@@ -50,19 +70,17 @@ void loop()
       digitalWrite(ONBOARD_LED, LOW);
     }
     printf("%lu frames received at %lu \n", frameCount, millis());
-    // diagnoseFrame(frameBuffer);
   }
 
   if (millis() % HEARTBEAT_MS < HEARTBEAT_MS / 10)
   {
     digitalWrite(ONBOARD_LED, HIGH);
-    digitalWrite(5, HIGH);
   }
   else {
     digitalWrite(ONBOARD_LED, LOW);
     digitalWrite(5, LOW);
   }
-  blinkGpioOneByOne();
+  // blinkGpioOneByOne();
 
 }
 
