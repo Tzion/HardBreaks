@@ -7,7 +7,7 @@
 
 #define FRAME_SIZE 1
 #define HEARTBEAT_MS 6000
-#define LED_PIN 4
+#define LED_PIN 2
 #define NUM_LEDS 39  // Adjust to your actual number of LEDs
 #define LED_TYPE WS2815
 #define COLOR_ORDER GRB
@@ -28,6 +28,9 @@ void setup()
   pinMode(5, OUTPUT);
   pinMode(4, OUTPUT);
   pinMode(6, OUTPUT);
+  digitalWrite(4, HIGH);
+  digitalWrite(5, HIGH);
+  digitalWrite(6, HIGH);
   pinMode(LED_PIN, OUTPUT);
   
   // Initialize FastLED
@@ -39,15 +42,12 @@ void setup()
     ;
   if (Serial)
     blink(3000, 17);
-  Serial.println("RP2040 ready");
+  Serial.println("controller ready");
   printf("frame size: %d\n", FRAME_SIZE);
 }
 
 void loop()
 {
-  digitalWrite(4, HIGH);
-  digitalWrite(5, HIGH);
-  digitalWrite(6, HIGH);
   // Simple rainbow animation
   fill_rainbow(leds, NUM_LEDS, hue, 7);
   FastLED.show();
@@ -78,9 +78,8 @@ void loop()
   }
   else {
     digitalWrite(ONBOARD_LED, LOW);
-    digitalWrite(5, LOW);
   }
-  // blinkGpioOneByOne();
+  blinkGpioOneByOne();
 
 }
 
@@ -98,11 +97,11 @@ void diagnoseFrame(uint8_t *frame)
 }
 
 void blinkGpioOneByOne(){
-  for (int pin = 0; pin <= 29; ++pin) {
+  for (int pin = 0; pin <= 30; ++pin) {
     pinMode(pin, OUTPUT);
     digitalWrite(pin, HIGH);
-    printf("pin %d is on", pin);
-    delay(120);
+    printf("pin %d is on\n", pin);
+    delay(420);
     digitalWrite(pin, LOW);
   }
   printf("\n");
