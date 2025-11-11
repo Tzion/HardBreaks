@@ -15,6 +15,7 @@
 #define NUM_LEDS (LEDS_PER_STRIP * NUM_STRIPS)
 #define LED_TYPE WS2815
 #define COLOR_ORDER GRB
+#define STRIP_4 3
 #define STRIP_5 5
 #define STRIP_6 7
 #define STRIP_7 9
@@ -27,11 +28,14 @@ uint32_t frameCount = 0;
 
 void diagnoseFrame(uint8_t *frame);
 void setAllPinsToOutput();
+void runMovingRainbow();
+void receiveFrames();
 
 void setup()
 {
   Serial.begin(SERIAL_BAUD);
-  while (!Serial && millis() < 5600);
+  while (!Serial && millis() < 5600)
+    ;
   if (Serial)
     blink(3000, 17);
   Serial.println("controller ready");
@@ -42,9 +46,20 @@ void setup()
   pinMode(STRIP_6, OUTPUT);
   pinMode(STRIP_7, OUTPUT);
   pinMode(LED_PIN, OUTPUT);
+
+  FastLED.addLeds<LED_TYPE, STRIP_5, COLOR_ORDER>(leds, 0, LEDS_PER_STRIP);
+  FastLED.addLeds<LED_TYPE, STRIP_6, COLOR_ORDER>(leds, LEDS_PER_STRIP, LEDS_PER_STRIP);
+  FastLED.addLeds<LED_TYPE, STRIP_7, COLOR_ORDER>(leds, LEDS_PER_STRIP * 2, LEDS_PER_STRIP);
+  FastLED.setBrightness(50); // Set initial brightness (0-255)
 }
 
 void loop()
+{
+  receiveFrames();
+  runMovingRainbow();
+}
+
+void receiveFrames()
 {
   if (Serial.available() >= FRAME_SIZE)
   {
@@ -69,7 +84,8 @@ void loop()
   {
     digitalWrite(ONBOARD_LED, HIGH);
   }
-  else {
+  else
+  {
     digitalWrite(ONBOARD_LED, LOW);
   }
 }
@@ -87,9 +103,35 @@ void diagnoseFrame(uint8_t *frame)
          frame[last], frame[last + 1], frame[last + 2]);
 }
 
-void setAllPinsToOutput() {
-  for (int pin=0; pin <= 29; ++pin){
+void setAllPinsToOutput()
+{
+  for (int pin = 0; pin <= 29; ++pin)
+  {
     pinMode(pin, OUTPUT);
   }
 }
 
+void runMovingRainbow()
+{
+  // Increment hue for animation effect
+  hue++;
+
+  // Update each strip separately
+  for (int strip = 0; strip < NUM_STRIPS; strip++)
+  {
+    int startIndex = strip * LEDS_PER_STRIP;
+
+    // Fill each LED in the strip with rainbow colors
+    for (int i = 0; i < LEDS_PER_STRIP; i++)
+    {
+      leds[startIndex + i] = CHSV(hue + (i * 256 / LEDS_PER_STRIP), 255, 255);
+    }
+  }
+
+  // Show the LEDs on each strip
+  FastLED[0].showLeds(20); // STRIP_5
+  FastLED[1].showLeds(50); // STRIP_6
+  FastLED[2].showLeds(75); // STRIP_7
+
+  delay(20); // Control animation speed
+}
