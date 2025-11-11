@@ -8,7 +8,10 @@
 #define FRAME_SIZE 1
 #define HEARTBEAT_MS 6000
 #define LED_PIN 2
-#define NUM_LEDS 39*7  // Adjust to your actual number of LEDs
+// Define per-strip and total counts correctly
+#define LEDS_PER_STRIP 39
+#define NUM_STRIPS 3
+#define NUM_LEDS (LEDS_PER_STRIP * NUM_STRIPS)
 #define LED_TYPE WS2815
 #define COLOR_ORDER GRB
 #define STRIP_5 10
@@ -37,9 +40,10 @@ void setup()
   pinMode(LED_PIN, OUTPUT);
   
   // Initialize FastLED
-  FastLED.addLeds<LED_TYPE, STRIP_5, COLOR_ORDER>(leds, NUM_LEDS);
-  FastLED.addLeds<LED_TYPE, STRIP_6, COLOR_ORDER>(leds, NUM_LEDS);
-  FastLED.addLeds<LED_TYPE, STRIP_7, COLOR_ORDER>(leds, NUM_LEDS);
+  // Give each strip its own slice of the LED buffer
+  FastLED.addLeds<LED_TYPE, STRIP_5, COLOR_ORDER>(leds + (LEDS_PER_STRIP * 0), LEDS_PER_STRIP);
+  FastLED.addLeds<LED_TYPE, STRIP_6, COLOR_ORDER>(leds + (LEDS_PER_STRIP * 1), LEDS_PER_STRIP);
+  FastLED.addLeds<LED_TYPE, STRIP_7, COLOR_ORDER>(leds + (LEDS_PER_STRIP * 2), LEDS_PER_STRIP);
   FastLED.setBrightness(50);
 
   Serial.begin(SERIAL_BAUD);
@@ -53,10 +57,14 @@ void setup()
 
 void loop()
 {
-  // Simple rainbow animation
-  fill_rainbow(leds, NUM_LEDS, hue, 7);
+  // Moving rainbow: advance base hue, offset each strip slightly
+  static uint8_t baseHue = 0;
+  for (int s = 0; s < NUM_STRIPS; ++s) {
+    int offset = s * LEDS_PER_STRIP;
+    fill_rainbow(leds + offset, LEDS_PER_STRIP, baseHue + s * 16, 255 / LEDS_PER_STRIP);
+  }
   FastLED.show();
-  hue++;
+  baseHue++; // speed of motion
 
   if (Serial.available() >= FRAME_SIZE)
   {
@@ -84,8 +92,9 @@ void loop()
   else {
     digitalWrite(ONBOARD_LED, LOW);
   }
-  blinkGpioOneByOne();
 
+  // Important: don't reconfigure/drive all GPIOs while using FastLED timing
+  // blinkGpioOneByOne();
 }
 
 void diagnoseFrame(uint8_t *frame)
