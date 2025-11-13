@@ -10,8 +10,8 @@
 #define HEARTBEAT_MS 6000
 #define LED_PIN 2
 // Define per-strip and total counts correctly
-#define LEDS_PER_STRIP 39
-#define NUM_STRIPS 3
+#define LEDS_PER_STRIP 39 * 7
+#define NUM_STRIPS 4
 #define NUM_LEDS (LEDS_PER_STRIP * NUM_STRIPS)
 #define LED_TYPE WS2815
 #define COLOR_ORDER GRB
@@ -33,6 +33,8 @@ void receiveFrames();
 
 void setup()
 {
+  pinMode(ONBOARD_LED, OUTPUT);
+  digitalWrite(ONBOARD_LED, HIGH); 
   Serial.begin(SERIAL_BAUD);
   while (!Serial && millis() < 5600)
     ;
@@ -41,15 +43,17 @@ void setup()
   Serial.println("controller ready");
   printf("frame size: %d\n", FRAME_SIZE);
 
-  pinMode(ONBOARD_LED, OUTPUT);
+  pinMode(STRIP_4, OUTPUT);
   pinMode(STRIP_5, OUTPUT);
   pinMode(STRIP_6, OUTPUT);
   pinMode(STRIP_7, OUTPUT);
   pinMode(LED_PIN, OUTPUT);
 
-  FastLED.addLeds<LED_TYPE, STRIP_5, COLOR_ORDER>(leds, 0, LEDS_PER_STRIP);
-  FastLED.addLeds<LED_TYPE, STRIP_6, COLOR_ORDER>(leds, LEDS_PER_STRIP, LEDS_PER_STRIP);
-  FastLED.addLeds<LED_TYPE, STRIP_7, COLOR_ORDER>(leds, LEDS_PER_STRIP * 2, LEDS_PER_STRIP);
+  // Add strips in order: STRIP_4, STRIP_5, STRIP_6, STRIP_7
+  FastLED.addLeds<LED_TYPE, STRIP_4, COLOR_ORDER>(leds, 0, LEDS_PER_STRIP);
+  FastLED.addLeds<LED_TYPE, STRIP_5, COLOR_ORDER>(leds, LEDS_PER_STRIP, LEDS_PER_STRIP);
+  FastLED.addLeds<LED_TYPE, STRIP_6, COLOR_ORDER>(leds, LEDS_PER_STRIP * 2, LEDS_PER_STRIP);
+  FastLED.addLeds<LED_TYPE, STRIP_7, COLOR_ORDER>(leds, LEDS_PER_STRIP * 3, LEDS_PER_STRIP);
   FastLED.setBrightness(50); // Set initial brightness (0-255)
 }
 
@@ -128,10 +132,11 @@ void runMovingRainbow()
     }
   }
 
-  // Show the LEDs on each strip
-  FastLED[0].showLeds(20); // STRIP_5
-  FastLED[1].showLeds(50); // STRIP_6
-  FastLED[2].showLeds(75); // STRIP_7
+  // Show the LEDs on each strip (controllers 0..3)
+  FastLED[0].showLeds(50); // STRIP_4
+  FastLED[1].showLeds(25); // STRIP_5
+  FastLED[2].showLeds(75); // STRIP_6
+  FastLED[3].showLeds(100); // STRIP_7
 
   delay(20); // Control animation speed
 }
