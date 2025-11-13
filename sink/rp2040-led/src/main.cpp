@@ -34,20 +34,16 @@ void receiveFrames();
 void setup()
 {
   pinMode(ONBOARD_LED, OUTPUT);
-  digitalWrite(ONBOARD_LED, HIGH); 
+  digitalWrite(ONBOARD_LED, HIGH);
   Serial.begin(SERIAL_BAUD);
-  while (!Serial && millis() < 5600)
+  while (!Serial && millis() < 3100)
     ;
   if (Serial)
-    blink(3000, 17);
+    blink(2400, 17);
   Serial.println("controller ready");
   printf("frame size: %d\n", FRAME_SIZE);
 
-  pinMode(STRIP_4, OUTPUT);
-  pinMode(STRIP_5, OUTPUT);
-  pinMode(STRIP_6, OUTPUT);
-  pinMode(STRIP_7, OUTPUT);
-  pinMode(LED_PIN, OUTPUT);
+  setAllPinsToOutput();
 
   // Add strips in order: STRIP_4, STRIP_5, STRIP_6, STRIP_7
   FastLED.addLeds<LED_TYPE, STRIP_4, COLOR_ORDER>(leds, 0, LEDS_PER_STRIP);
@@ -59,6 +55,7 @@ void setup()
 
 void loop()
 {
+  activateLedByKeyboard(); // blocking
   receiveFrames();
   runMovingRainbow();
 }
@@ -133,9 +130,9 @@ void runMovingRainbow()
   }
 
   // Show the LEDs on each strip (controllers 0..3)
-  FastLED[0].showLeds(50); // STRIP_4
-  FastLED[1].showLeds(25); // STRIP_5
-  FastLED[2].showLeds(75); // STRIP_6
+  FastLED[0].showLeds(50);  // STRIP_4
+  FastLED[1].showLeds(25);  // STRIP_5
+  FastLED[2].showLeds(75);  // STRIP_6
   FastLED[3].showLeds(100); // STRIP_7
 
   delay(20); // Control animation speed
