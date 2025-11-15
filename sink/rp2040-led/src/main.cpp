@@ -10,15 +10,19 @@
 #define HEARTBEAT_MS 6000
 #define LED_PIN 2
 // Define per-strip and total counts correctly
-#define LEDS_PER_STRIP (39 * 7)
-#define NUM_STRIPS 4
+#define LEDS_PER_STRIP (39 * 6)
+#define NUM_STRIPS 1
 #define NUM_LEDS (LEDS_PER_STRIP * NUM_STRIPS)
 #define LED_TYPE WS2815
 #define COLOR_ORDER GRB
-#define STRIP_4 26
-#define STRIP_5 20
-#define STRIP_6 21
-#define STRIP_7 9
+
+#define STRIP_1 9
+#define STRIP_2 8
+#define STRIP_3 7
+#define STRIP_4 28
+#define STRIP_5 27
+#define STRIP_6 23 // half working
+#define STRIP_7 22
 
 CRGB leds[NUM_LEDS];
 uint8_t hue = 0;
@@ -45,19 +49,22 @@ void setup()
 
   setAllPinsToOutput();
 
-  // Add strips in order: STRIP_4, STRIP_5, STRIP_6, STRIP_7
-  FastLED.addLeds<LED_TYPE, STRIP_4, COLOR_ORDER>(leds, 0, LEDS_PER_STRIP);
-  FastLED.addLeds<LED_TYPE, STRIP_5, COLOR_ORDER>(leds, LEDS_PER_STRIP, LEDS_PER_STRIP);
-  FastLED.addLeds<LED_TYPE, STRIP_6, COLOR_ORDER>(leds, LEDS_PER_STRIP * 2, LEDS_PER_STRIP);
-  FastLED.addLeds<LED_TYPE, STRIP_7, COLOR_ORDER>(leds, LEDS_PER_STRIP * 3, LEDS_PER_STRIP);
+  // FastLED.addLeds<LED_TYPE, STRIP_5, COLOR_ORDER>(leds, 0, LEDS_PER_STRIP);
+  // FastLED.addLeds<LED_TYPE, STRIP_1, COLOR_ORDER>(leds, 0, LEDS_PER_STRIP);
+  // FastLED.addLeds<LED_TYPE, STRIP_2, COLOR_ORDER>(leds, LEDS_PER_STRIP, LEDS_PER_STRIP);
+  // FastLED.addLeds<LED_TYPE, STRIP_3, COLOR_ORDER>(leds, LEDS_PER_STRIP * 2, LEDS_PER_STRIP);
+  // FastLED.addLeds<LED_TYPE, STRIP_4, COLOR_ORDER>(leds, LEDS_PER_STRIP * 3, LEDS_PER_STRIP);
+  // FastLED.addLeds<LED_TYPE, STRIP_5, COLOR_ORDER>(leds, LEDS_PER_STRIP * 4, LEDS_PER_STRIP);
+  // FastLED.addLeds<LED_TYPE, STRIP_6, COLOR_ORDER>(leds, LEDS_PER_STRIP * 5, LEDS_PER_STRIP);
+  // FastLED.addLeds<LED_TYPE, STRIP_7, COLOR_ORDER>(leds, LEDS_PER_STRIP * 6, LEDS_PER_STRIP);
   FastLED.setBrightness(50); // Set initial brightness (0-255)
 }
 
 void loop()
 {
   activateLedByKeyboard(); // blocking
-  receiveFrames();
-  runMovingRainbow();
+  // receiveFrames();
+  // runMovingRainbow();
 }
 
 void receiveFrames()

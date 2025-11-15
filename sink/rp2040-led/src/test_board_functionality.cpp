@@ -177,7 +177,7 @@ static void runChase(CRGB color, const char *name)
         fill_solid(testLeds, TEST_NUM_LEDS, CRGB::Black);
         testLeds[i] = color;
         FastLED.show();
-        delay(20);
+        delay(1);
     }
     fill_solid(testLeds, TEST_NUM_LEDS, CRGB::Black);
     FastLED.show();
