@@ -10,14 +10,14 @@
 #define HEARTBEAT_MS 6000
 #define LED_PIN 2
 // Define per-strip and total counts correctly
-#define LEDS_PER_STRIP 39 * 7
+#define LEDS_PER_STRIP (39 * 7)
 #define NUM_STRIPS 4
 #define NUM_LEDS (LEDS_PER_STRIP * NUM_STRIPS)
 #define LED_TYPE WS2815
 #define COLOR_ORDER GRB
-#define STRIP_4 3
-#define STRIP_5 5
-#define STRIP_6 7
+#define STRIP_4 26
+#define STRIP_5 20
+#define STRIP_6 21
 #define STRIP_7 9
 
 CRGB leds[NUM_LEDS];
