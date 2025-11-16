@@ -20,6 +20,30 @@ const height = 39;//config_general.matrix.height;
 let canvas;
 let ctx;
 
+let ws;
+
+async function connectSerialWebSocket() {
+  try {
+    ws = new WebSocket('ws://localhost:8080');
+
+    ws.onopen = () => {
+      console.log('Connected to serial bridge');
+    };
+
+    ws.onmessage = (event) => {
+      const packet = JSON.parse(event.data);
+      console.log('First packet received:', packet.data);
+      console.log('As text:', new TextDecoder().decode(new Uint8Array(packet.data)));
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+  } catch (error) {
+    console.error('WebSocket connection error:', error);
+  }
+}
+
 function ledMatrix() {
   const strips = height;
   for (let i = 0; i <= strips; i++) {
@@ -121,3 +145,4 @@ function showGrid() {
 initCanvas();
 showGrid();
 ledMatrix();
+connectSerialWebSocket()

@@ -14,6 +14,10 @@ export default {
             ratio_factors: {
                 laptop: 130,
                 tv: 70,
+            },
+            virtualPort: {
+                enabled: true,
+                path: "/dev/ttys032"
             }
         }
     }

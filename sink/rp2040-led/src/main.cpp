@@ -10,8 +10,8 @@
 #define HEARTBEAT_MS 6000
 #define LED_PIN 2
 // Define per-strip and total counts correctly
-#define LEDS_PER_STRIP (39 * 6)
-#define NUM_STRIPS 1
+#define LEDS_PER_STRIP (39 * 7)
+#define NUM_STRIPS 6
 #define NUM_LEDS (LEDS_PER_STRIP * NUM_STRIPS)
 #define LED_TYPE WS2815
 #define COLOR_ORDER GRB
@@ -49,14 +49,13 @@ void setup()
 
   setAllPinsToOutput();
 
-  // FastLED.addLeds<LED_TYPE, STRIP_5, COLOR_ORDER>(leds, 0, LEDS_PER_STRIP);
-  // FastLED.addLeds<LED_TYPE, STRIP_1, COLOR_ORDER>(leds, 0, LEDS_PER_STRIP);
-  // FastLED.addLeds<LED_TYPE, STRIP_2, COLOR_ORDER>(leds, LEDS_PER_STRIP, LEDS_PER_STRIP);
-  // FastLED.addLeds<LED_TYPE, STRIP_3, COLOR_ORDER>(leds, LEDS_PER_STRIP * 2, LEDS_PER_STRIP);
-  // FastLED.addLeds<LED_TYPE, STRIP_4, COLOR_ORDER>(leds, LEDS_PER_STRIP * 3, LEDS_PER_STRIP);
+  FastLED.addLeds<LED_TYPE, STRIP_1, COLOR_ORDER>(leds, 0, LEDS_PER_STRIP);
+  FastLED.addLeds<LED_TYPE, STRIP_2, COLOR_ORDER>(leds, LEDS_PER_STRIP, LEDS_PER_STRIP);
+  FastLED.addLeds<LED_TYPE, STRIP_3, COLOR_ORDER>(leds, LEDS_PER_STRIP * 2, LEDS_PER_STRIP);
+  FastLED.addLeds<LED_TYPE, STRIP_4, COLOR_ORDER>(leds, LEDS_PER_STRIP * 3, LEDS_PER_STRIP);
   // FastLED.addLeds<LED_TYPE, STRIP_5, COLOR_ORDER>(leds, LEDS_PER_STRIP * 4, LEDS_PER_STRIP);
-  // FastLED.addLeds<LED_TYPE, STRIP_6, COLOR_ORDER>(leds, LEDS_PER_STRIP * 5, LEDS_PER_STRIP);
-  // FastLED.addLeds<LED_TYPE, STRIP_7, COLOR_ORDER>(leds, LEDS_PER_STRIP * 6, LEDS_PER_STRIP);
+  FastLED.addLeds<LED_TYPE, STRIP_6, COLOR_ORDER>(leds, LEDS_PER_STRIP * 4, LEDS_PER_STRIP);
+  FastLED.addLeds<LED_TYPE, STRIP_7, COLOR_ORDER>(leds, LEDS_PER_STRIP * 5, LEDS_PER_STRIP);
   FastLED.setBrightness(50); // Set initial brightness (0-255)
 }
 
@@ -64,7 +63,7 @@ void loop()
 {
   activateLedByKeyboard(); // blocking
   // receiveFrames();
-  // runMovingRainbow();
+  runMovingRainbow();
 }
 
 void receiveFrames()
