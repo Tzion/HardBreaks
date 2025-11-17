@@ -3,8 +3,6 @@
 #include "config.h"
 
 
-#define DATA_SERIAL Serial
-#define DEBUG_SERIAL Serial1
 
 #if DEBUG
   // Check if Serial.printf() is available (RP2040, ESP32, etc.)
