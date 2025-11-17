@@ -8,7 +8,7 @@
 #define STRIP_1 8
 #define NUM_LEDS (7 * 39) // 273 LEDs
 #define LED_TYPE WS2815
-#define COLOR_ORDER GRB
+#define COLOR_ORDER RGB
 
 // Frame Configuration
 #define PIXEL_SIZE 3
