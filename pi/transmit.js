@@ -44,7 +44,7 @@ const transmitters = []
 async function connect() {
   if (config.serial.enabled)
     transmitters.push(new SerialTransmitter(config.serial.path, config.serial.baudRate));
-  transmitters.forEach(t => t.connect());
+  await Promise.all(transmitters.map(t => t.connect()));
   console.log(transmitters.length ? "All transmitters connected" : "No transmitters to connect");
 }
 

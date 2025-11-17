@@ -4,7 +4,8 @@ import { createCanvas } from 'canvas';
 import * as transmit from './transmit.js';
 import crackAnimation from './art/crack.js';
 import * as pixelize from './pixelize.js';
-import { toRGB } from './frame.js';
+import { toRGB, createPacket } from './frame.js';
+import fs from 'fs';
 
 async function runSketchAnimation(sketchAnimation, settings) {
     const [width, height] = settings.dimensions;
@@ -20,10 +21,17 @@ async function runSketchAnimation(sketchAnimation, settings) {
 
     setInterval(() => {
         manager.render();
+        const outPath = 'lst-frame.png';
+        try {
+            fs.writeFileSync(outPath, canvas.toBuffer('image/png'));
+        } catch (err) {
+            console.error('Failed to save frame:', err);
+        }
         const imageData = context.getImageData(0, 0, width, height);
-        const downScaled = pixelize.scaleDown(imageData, 49, 39);
-        const packets = toRGB(downScaled);
-        transmit.send(packets);
+        const downScaled = pixelize.scaleDown(imageData, 7, 39);
+        const rgb = toRGB(downScaled);
+        const packet = createPacket(rgb);
+        transmit.send(packet);
     }, 1000 / settings.fps);
 }
 
