@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <FastLED.h>
 #include "helper.h"
-#include "debug.h"
 #include "test_board_functionality.h"
 
 #define TEST_NUM_LEDS (39 * 7)

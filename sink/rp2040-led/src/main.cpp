@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <FastLED.h>
-#include "debug.h"
 #include "helper.h"
 
 #define HEARTBEAT_MS 1000
