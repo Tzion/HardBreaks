@@ -60,12 +60,9 @@ void startSerial()
 {
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
-
-  DATA_SERIAL.begin(SERIAL_BAUD);
-  DEBUG_SERIAL.begin(SERIAL_BAUD);
-  while (!DATA_SERIAL && millis() < 3100)
+  Serial.begin(SERIAL_BAUD);
+  while (!Serial && millis() < 3100)
     ;
-  if (DATA_SERIAL)
+  if (Serial)
     blink(2400, 17);
 }
-
