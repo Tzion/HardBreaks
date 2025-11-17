@@ -2,6 +2,7 @@
 import crypto from 'crypto';
 import config from '../config.js';
 import { SerialPort } from 'serialport';
+import { ReadlineParser } from '@serialport/parser-readline';
 
 class SerialTransmitter {
   constructor(path = config.serial.path, baudRate = config.serial.baudRate) {
@@ -12,6 +13,12 @@ class SerialTransmitter {
 
   async connect() {
     this.port = new SerialPort({ path: this.path, baudRate: this.baudRate });
+
+    const parser = this.port.pipe(new ReadlineParser({ delimiter: '\n' }));
+    parser.on('data', (line) => {
+      console.log(`Controller-via-Serial :: ${line}`);
+    })
+
     // should we use try-catch instead of resolve and reject
     await new Promise((resolve, reject) => {
       this.port.on('open', resolve);

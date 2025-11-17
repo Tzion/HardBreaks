@@ -160,6 +160,9 @@ void showSinglePixel()
       leds[currentPosition] = CRGB(r, g, b);
       FastLED.show();
 
+
+      Serial.printf("serial: Frame %lu: Position %lu = RGB(%u, %u, %u)\n",
+             frameCount, currentPosition, r, g, b);
       printf("Frame %lu: Position %lu = RGB(%u, %u, %u)\n",
              frameCount, currentPosition, r, g, b);
 

@@ -21,7 +21,7 @@ async function runSketchAnimation(sketchAnimation, settings) {
 
     setInterval(() => {
         manager.render();
-        const outPath = 'lst-frame.png';
+        const outPath = 'last-frame.png';
         try {
             fs.writeFileSync(outPath, canvas.toBuffer('image/png'));
         } catch (err) {
