@@ -12,5 +12,6 @@
 // - freq_hz: blink frequency (toggles per second). If 0 led is on for all duration.
 // Behavior: LED starts LOW, then toggles every half-period. Ends with LED LOW.
 void blink(unsigned int duration_ms, unsigned int freq_hz = 0);
+void startSerial();
 
 #endif // HELPER_H

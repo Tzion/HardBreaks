@@ -1,145 +1,55 @@
-#include "config.h"
-#include <stdint.h>
 #include <Arduino.h>
-#include "helper.h"
-#include "debug.h"
 #include <FastLED.h>
-#include "test_board_functionality.h"
+#include "debug.h"
+#include "helper.h"
 
-#define FRAME_SIZE 1
-#define HEARTBEAT_MS 6000
-#define LED_PIN 2
-// Define per-strip and total counts correctly
-#define LEDS_PER_STRIP (39 * 7)
-#define NUM_STRIPS 6
-#define NUM_LEDS (LEDS_PER_STRIP * NUM_STRIPS)
+// LED Configuration
+#define STRIP_1 8
+#define NUM_LEDS (7 * 39)  // 273 LEDs
 #define LED_TYPE WS2815
 #define COLOR_ORDER GRB
 
-#define STRIP_1 9
-#define STRIP_2 8
-#define STRIP_3 7
-#define STRIP_4 28
-#define STRIP_5 27
-#define STRIP_6 23 // half working
-#define STRIP_7 22
+// Frame Configuration
+#define FRAME_SIZE 3  // RGB for single pixel
 
 CRGB leds[NUM_LEDS];
-uint8_t hue = 0;
-
 uint8_t frameBuffer[FRAME_SIZE];
 uint32_t frameCount = 0;
+uint32_t currentPosition = 0;
 
-void diagnoseFrame(uint8_t *frame);
-void setAllPinsToOutput();
-void runMovingRainbow();
-void receiveFrames();
+void setup() {
+  startSerial();
 
-void setup()
-{
-  pinMode(ONBOARD_LED, OUTPUT);
-  digitalWrite(ONBOARD_LED, HIGH);
-  Serial.begin(SERIAL_BAUD);
-  while (!Serial && millis() < 3100)
-    ;
-  if (Serial)
-    blink(2400, 17);
-  Serial.println("controller ready");
-  printf("frame size: %d\n", FRAME_SIZE);
-
-  setAllPinsToOutput();
-
-  FastLED.addLeds<LED_TYPE, STRIP_1, COLOR_ORDER>(leds, 0, LEDS_PER_STRIP);
-  FastLED.addLeds<LED_TYPE, STRIP_2, COLOR_ORDER>(leds, LEDS_PER_STRIP, LEDS_PER_STRIP);
-  FastLED.addLeds<LED_TYPE, STRIP_3, COLOR_ORDER>(leds, LEDS_PER_STRIP * 2, LEDS_PER_STRIP);
-  FastLED.addLeds<LED_TYPE, STRIP_4, COLOR_ORDER>(leds, LEDS_PER_STRIP * 3, LEDS_PER_STRIP);
-  // FastLED.addLeds<LED_TYPE, STRIP_5, COLOR_ORDER>(leds, LEDS_PER_STRIP * 4, LEDS_PER_STRIP);
-  FastLED.addLeds<LED_TYPE, STRIP_6, COLOR_ORDER>(leds, LEDS_PER_STRIP * 4, LEDS_PER_STRIP);
-  FastLED.addLeds<LED_TYPE, STRIP_7, COLOR_ORDER>(leds, LEDS_PER_STRIP * 5, LEDS_PER_STRIP);
-  FastLED.setBrightness(50); // Set initial brightness (0-255)
+  printf("Strip: Pin %d, %d LEDs\n", STRIP_1, NUM_LEDS);
+  
+  FastLED.addLeds<LED_TYPE, STRIP_1, COLOR_ORDER>(leds, NUM_LEDS);
+  FastLED.setBrightness(50);
+  FastLED.clear();
+  FastLED.show();
+  
 }
 
-void loop()
-{
-  activateLedByKeyboard(); // blocking
-  // receiveFrames();
-  runMovingRainbow();
-}
-
-void receiveFrames()
-{
-  if (Serial.available() >= FRAME_SIZE)
-  {
+void loop() {
+  if (Serial.available() >= FRAME_SIZE) {
     size_t n = Serial.readBytes(frameBuffer, FRAME_SIZE);
-    if (n != FRAME_SIZE)
-      return;
-
-    frameCount++;
-
-    if (frameCount % 10 == 0)
-    {
-      digitalWrite(ONBOARD_LED, HIGH);
-    }
-    if (frameCount % 15 == 0)
-    {
-      digitalWrite(ONBOARD_LED, LOW);
-    }
-    printf("%lu frames received at %lu \n", frameCount, millis());
-  }
-
-  if (millis() % HEARTBEAT_MS < HEARTBEAT_MS / 10)
-  {
-    digitalWrite(ONBOARD_LED, HIGH);
-  }
-  else
-  {
-    digitalWrite(ONBOARD_LED, LOW);
-  }
-}
-
-void diagnoseFrame(uint8_t *frame)
-{
-  // Print first, middle, last pixel RGB
-  int mid = (NUM_LEDS / 2) * 3;
-  int last = (NUM_LEDS - 1) * 3;
-
-  printf("Frame %lu | First(%u,%u,%u) Mid(%u,%u,%u) Last(%u,%u,%u)\n",
-         frameCount,
-         frame[0], frame[1], frame[2],
-         frame[mid], frame[mid + 1], frame[mid + 2],
-         frame[last], frame[last + 1], frame[last + 2]);
-}
-
-void setAllPinsToOutput()
-{
-  for (int pin = 0; pin <= 29; ++pin)
-  {
-    pinMode(pin, OUTPUT);
-  }
-}
-
-void runMovingRainbow()
-{
-  // Increment hue for animation effect
-  hue++;
-
-  // Update each strip separately
-  for (int strip = 0; strip < NUM_STRIPS; strip++)
-  {
-    int startIndex = strip * LEDS_PER_STRIP;
-
-    // Fill each LED in the strip with rainbow colors
-    for (int i = 0; i < LEDS_PER_STRIP; i++)
-    {
-      leds[startIndex + i] = CHSV(hue + (i * 256 / LEDS_PER_STRIP), 255, 255);
+    
+    if (n == FRAME_SIZE) {
+      frameCount++;
+      
+      // Extract RGB values
+      uint8_t r = frameBuffer[0];
+      uint8_t g = frameBuffer[1];
+      uint8_t b = frameBuffer[2];
+      
+      // Set LED at current position
+      leds[currentPosition] = CRGB(r, g, b);
+      FastLED.show();
+      
+      printf("Frame %lu: Position %lu = RGB(%u, %u, %u)\n", 
+             frameCount, currentPosition, r, g, b);
+      
+      // Move to next position, wrap around
+      currentPosition = (currentPosition + 1) % NUM_LEDS;
     }
   }
-
-  // Show the LEDs on each strip (controllers 0..3)
-  FastLED[0].showLeds(50);  // STRIP_4
-  FastLED[1].showLeds(25);  // STRIP_5
-  FastLED[2].showLeds(75);  // STRIP_6
-  FastLED[3].showLeds(100); // STRIP_7
-
-  delay(20); // Control animation speed
 }
