@@ -16,7 +16,7 @@ class SerialTransmitter {
 
     const parser = this.port.pipe(new ReadlineParser({ delimiter: '\n' }));
     parser.on('data', (line) => {
-      console.log(`Controller-via-Serial :: ${line}`);
+      console.log(`CONTROLLER: ${line}`);
     })
 
     // should we use try-catch instead of resolve and reject

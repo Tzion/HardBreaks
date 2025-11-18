@@ -5,14 +5,18 @@
 #define HEARTBEAT_MS 1000
 
 // LED Configuration
-#define STRIP_1 23
-#define NUM_LEDS (7 * 39) // 273 LEDs
+#define STRIP_1 7
+#define STRIP_2 9
+#define STRIP_3 8
+#define NUM_LEDS_PER_GROUP (7 * 39)
+#define NUM_GROUPS 3
+#define NUM_LEDS (NUM_GROUPS * NUM_LEDS_PER_GROUP)
 #define LED_TYPE WS2815
 #define COLOR_ORDER RGB
 
 // Frame Configuration
 #define PIXEL_SIZE 3
-#define FRAME_SIZE (7 * 39 * PIXEL_SIZE)
+#define FRAME_SIZE (NUM_LEDS * PIXEL_SIZE)
 #define MAGIC_BYTE_1 0xFF
 #define MAGIC_BYTE_2 0xAA
 
@@ -28,9 +32,16 @@ void receiveFrame();
 void setup()
 {
   startSerial();
-  printf("Strip: Pin %d, %d LEDs\n", STRIP_1, NUM_LEDS);
+  printf("Testing %d groups, %d LEDs total\n", NUM_GROUPS, NUM_LEDS);
+  printf("STRIP_1 pin: %d, STRIP_2 pin: %d, TRIP_3 pin:\n", STRIP_1, STRIP_2, STRIP_3);
 
-  FastLED.addLeds<LED_TYPE, STRIP_1, COLOR_ORDER>(leds, NUM_LEDS);
+  pinMode(STRIP_1, OUTPUT);
+  pinMode(STRIP_2, OUTPUT);
+  pinMode(STRIP_3, OUTPUT);
+  FastLED.addLeds<LED_TYPE, STRIP_1, COLOR_ORDER>(leds, 0, NUM_LEDS_PER_GROUP);
+  FastLED.addLeds<LED_TYPE, STRIP_2, COLOR_ORDER>(leds, NUM_LEDS_PER_GROUP, NUM_LEDS_PER_GROUP);
+  FastLED.addLeds<LED_TYPE, STRIP_3, COLOR_ORDER>(leds, NUM_LEDS_PER_GROUP * 2, NUM_LEDS_PER_GROUP);
+
   FastLED.setBrightness(50);
   FastLED.clear();
   FastLED.show();
@@ -118,13 +129,13 @@ void receiveFrame()
       {
         frameCount++;
         printf("Frame %lu received OK (%u bytes) (checksum=0x%02X)\n", frameCount, expectedLength, byte);
-        memcpy(leds, frameBuffer, expectedLength);
-        FastLED.show();
       }
       else
       {
         printf("Checksum error! Expected %u, got %u\n", calculatedChecksum, byte);
       }
+      memcpy(leds, frameBuffer, expectedLength);
+      FastLED.show();
       parseState = WAIT_MAGIC_1;
       break;
     }
@@ -153,9 +164,6 @@ void showSinglePixel()
       // Set LED at current position
       leds[currentPosition] = CRGB(r, g, b);
       FastLED.show();
-
-      Serial.printf("serial: Frame %lu: Position %lu = RGB(%u, %u, %u)\n",
-                    frameCount, currentPosition, r, g, b);
       printf("Frame %lu: Position %lu = RGB(%u, %u, %u)\n",
              frameCount, currentPosition, r, g, b);
 
