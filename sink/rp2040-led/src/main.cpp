@@ -21,12 +21,9 @@ uint8_t frameBuffer[FRAME_SIZE];
 uint32_t frameCount = 0;
 CRGB leds[NUM_LEDS];
 
-
-
 void heartbeat();
 void showSinglePixel();
 void receiveFrame();
-
 
 void setup()
 {
@@ -137,9 +134,6 @@ void receiveFrame()
   heartbeat();
 }
 
-
-
-
 uint32_t currentPosition = 0;
 void showSinglePixel()
 {
@@ -160,9 +154,8 @@ void showSinglePixel()
       leds[currentPosition] = CRGB(r, g, b);
       FastLED.show();
 
-
       Serial.printf("serial: Frame %lu: Position %lu = RGB(%u, %u, %u)\n",
-             frameCount, currentPosition, r, g, b);
+                    frameCount, currentPosition, r, g, b);
       printf("Frame %lu: Position %lu = RGB(%u, %u, %u)\n",
              frameCount, currentPosition, r, g, b);
 
@@ -171,7 +164,6 @@ void showSinglePixel()
     }
   }
 }
-
 
 void heartbeat()
 {

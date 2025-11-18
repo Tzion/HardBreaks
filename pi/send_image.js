@@ -53,7 +53,6 @@ async function sendImageToLEDs(scaleX, scaleY, imagePath) {
 
     const packet = createPacket(remapped);
 
-
     await transmit.connect();
     console.log('Sending image to LEDs...');
     transmit.send(packet);
