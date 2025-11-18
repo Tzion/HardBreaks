@@ -10,6 +10,11 @@ export function toRGB(imageData) {
     return rgb;
 }
 
+export function pixelAt(RGBArray, i) {
+    const base = i * 3;
+    return [RGBArray[base], RGBArray[base + 1], RGBArray[base + 2]];
+}
+
 /* Protocol:
 MAGIC: 2 bytes (e.g., 0xFF 0xAA) - frame start marker
 LENGTH: 2 bytes - payload size (5,733 for full frame, 3 for single pixel)

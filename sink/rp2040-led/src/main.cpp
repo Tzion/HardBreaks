@@ -5,7 +5,7 @@
 #define HEARTBEAT_MS 1000
 
 // LED Configuration
-#define STRIP_1 22
+#define STRIP_1 23
 #define NUM_LEDS (7 * 39) // 273 LEDs
 #define LED_TYPE WS2815
 #define COLOR_ORDER RGB

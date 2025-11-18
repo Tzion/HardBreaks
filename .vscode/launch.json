@@ -17,6 +17,22 @@
             ]
         },
         {
+            "type": "node",
+            "request": "launch",
+            "name": "Send Image",
+            "skipFiles": [
+            "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/pi/send_image.js",
+            "args": [
+            "7",
+            "39",
+            "pi/art/3by3.png"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+        {
             "type": "chrome",
             "request": "launch",
             "name": "Simulator",
