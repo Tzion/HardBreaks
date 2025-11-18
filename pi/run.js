@@ -32,7 +32,7 @@ async function runSketchAnimation(sketchAnimation, settings) {
         const rgb = toRGB(downScaled);
         const packet = createPacket(rgb);
         transmit.send(packet);
-    }, 1000 / settings.fps);
+    }, 2500 / settings.fps);
 }
 
 const settings = {
