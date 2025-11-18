@@ -16,13 +16,13 @@
 #define LED_TYPE WS2815
 #define COLOR_ORDER GRB
 
-#define STRIP_1 8
+#define STRIP_1 8 // right most
 #define STRIP_2 9
 #define STRIP_3 7
 #define STRIP_4 28
 #define STRIP_5 27
-#define STRIP_6 23 // half working
-#define STRIP_7 22
+#define STRIP_6 23 // was flickering?
+#define STRIP_7 22  // left most
 
 CRGB leds[NUM_LEDS];
 uint8_t hue = 0;

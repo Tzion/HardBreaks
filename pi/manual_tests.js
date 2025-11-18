@@ -4,7 +4,7 @@ import { createPacket } from './frame.js'
 
 async function sendFrame() {
     await transmit.connect();
-    const rgbFrame = generateMarkerFrame();
+    const rgbFrame = markerFrame();
     const packet = createPacket(rgbFrame);
 
     transmit.send(packet);
@@ -13,7 +13,7 @@ async function sendFrame() {
 
 const fromUser = parseInt(process.argv[2]) || 0;
 
-function generateMarkerFrame(index = fromUser) {
+function markerFrame(index = fromUser) {
     var marker = new Uint8Array([
         0, 255, 0,
     ]);
@@ -24,6 +24,16 @@ function generateMarkerFrame(index = fromUser) {
     rgbFrame.set(marker, padding.length);
     console.log(rgbFrame)
     return rgbFrame;
+}
+
+
+function rgbFrame() {
+    // 3 pixels: [R,G,B] each, flattened into a single array
+    return new Uint8Array([
+        255, 0, 0,
+        0, 255, 0,
+        0, 0, 255
+    ]);
 }
 
 sendFrame();
