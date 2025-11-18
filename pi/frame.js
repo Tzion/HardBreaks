@@ -36,3 +36,65 @@ export function createPacket(rgbData) {
         Buffer.from([checksum])
     ]);
 }
+
+
+/**
+ * Remaps a flat RGB array from standard image layout (horizontal raster scan)
+ * to the physical LED matrix layout (7 groups of 7 vertical serpentine strips).
+ * 
+ * Physical layout:
+ * - 7 groups of LEDs (each on different controller pin)
+ * - Each group: 7 vertical strips of 39 LEDs
+ * - Total: 49 columns × 39 rows = 1,911 LEDs
+ * - Sequential serpentine wiring: odd strips go top→bottom, even strips go bottom→top
+ * 
+ * @param {Uint8Array} imageRGB - Flat RGB array [R,G,B,R,G,B,...] in row-major order
+ * @param {number} width - Image width
+ * @param {number} height - Image height
+ * @returns {Uint8Array} - Remapped RGB array for physical LED layout
+ */
+export function remapToPhysicalLayout(imageRGB, width=49, height=39, groups=7, stripsPerGroup=7, ledsPerStrip=height, pixelSize=3) {
+    
+    if (width !== groups * stripsPerGroup) {
+        throw new Error(`Width must be ${groups * stripsPerGroup}, got ${width}`);
+    }
+    if (height !== ledsPerStrip) {
+        throw new Error(`Height must be ${ledsPerStrip}, got ${height}`);
+    }
+    
+    const totalLEDs = width * height;
+    const outputRGB = new Uint8Array(totalLEDs * pixelSize);
+    
+    // Process each group
+    for (let group = 0; group < groups; group++) {
+        const groupStartCol = group * stripsPerGroup;
+        
+        // Process each strip within the group
+        for (let strip = 0; strip < stripsPerGroup; strip++) {
+            const col = groupStartCol + strip;
+            const isReversed = strip % 2 === 1; // Odd strips go bottom→top
+            
+            // Calculate the starting LED index for this strip in the output
+            const stripStartLED = (group * stripsPerGroup * ledsPerStrip) + (strip * ledsPerStrip);
+            
+            // Map each LED in this strip
+            for (let row = 0; row < height; row++) {
+                // Source pixel position in the image
+                const imagePixelIndex = row * width + col;
+                const imageSrcOffset = imagePixelIndex * pixelSize;
+                
+                // Destination LED position in the strip
+                const ledInStrip = isReversed ? (height - 1 - row) : row;
+                const outputLED = stripStartLED + ledInStrip;
+                const outputOffset = outputLED * pixelSize;
+                
+                // Copy RGB values
+                outputRGB[outputOffset] = imageRGB[imageSrcOffset];         // R
+                outputRGB[outputOffset + 1] = imageRGB[imageSrcOffset + 1]; // G
+                outputRGB[outputOffset + 2] = imageRGB[imageSrcOffset + 2]; // B
+            }
+        }
+    }
+    
+    return outputRGB;
+}

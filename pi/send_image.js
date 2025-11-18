@@ -2,7 +2,7 @@
 import { createCanvas, loadImage } from 'canvas';
 import * as transmit from './transmit.js';
 import * as pixelize from './pixelize.js';
-import { toRGB, createPacket } from './frame.js';
+import { toRGB, createPacket, remapToPhysicalLayout } from './frame.js';
 import fs from 'fs';
 
 async function sendImageToLEDs(scaleX, scaleY, imagePath) {
@@ -29,7 +29,11 @@ async function sendImageToLEDs(scaleX, scaleY, imagePath) {
     const rgb = toRGB(downScaled);
     console.log(`RGB buffer size: ${rgb.length} bytes`);
 
-    const packet = createPacket(rgb);
+     const remapped = remapToPhysicalLayout(rgb, scaleX, scaleY, 1, 7, 39);
+    console.log(`Remapped for physical layout: ${remapped.length} bytes`);
+
+    const packet = createPacket(remapped);
+
 
     await transmit.connect();
     console.log('Sending image to LEDs...');
