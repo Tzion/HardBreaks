@@ -2,18 +2,17 @@ import * as transmit from './transmit.js';
 import { createPacket } from './frame.js'
 
 
-async function sendFrame() {
+async function sendFrame(frameGenerator, ...args) {
     await transmit.connect();
-    const rgbFrame = markerFrame();
+    const rgbFrame = frameGenerator(...args);
     const packet = createPacket(rgbFrame);
 
     transmit.send(packet);
     transmit.disconnect()
 }
 
-const fromUser = parseInt(process.argv[2]) || 0;
 
-function markerFrame(index = fromUser) {
+function markerFrame(index) {
     var marker = new Uint8Array([
         0, 255, 0,
     ]);
@@ -36,4 +35,20 @@ function rgbFrame() {
     ]);
 }
 
-sendFrame();
+// Map function names to actual functions
+const frameGenerators = {
+    markerFrame,
+    rgbFrame
+};
+
+const frameGeneratorName = process.argv[2] || 'markerFrame';
+const frameGenerator = frameGenerators[frameGeneratorName];
+
+if (!frameGenerator) {
+    console.error(`Unknown frame generator: ${frameGeneratorName}`);
+    console.error(`Available generators: ${Object.keys(frameGenerators).join(', ')}`);
+    process.exit(1);
+}
+
+const arg = parseInt(process.argv[3]) || 0;
+sendFrame(frameGenerator, arg);
