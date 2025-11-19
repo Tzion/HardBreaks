@@ -2,7 +2,7 @@
 import { createCanvas, loadImage } from 'canvas';
 import * as transmit from './transmit.js';
 import * as pixelize from './pixelize.js';
-import { toRGB, createPacket, remapToPhysicalLayout, pixelAt } from './frame.js';
+import { toRGB, createPacket, remapToPhysicalLayout, pixelAt, getTotalStrips } from './frame.js';
 import fs from 'fs';
 
 const saveImages = true;
@@ -42,55 +42,14 @@ async function sendImageToLEDs(scaleX, scaleY, imagePath) {
         saveImage(rgb, scaleX, scaleY, 'rgb', true);
     }
 
-    // Calculate groups based on width (7 strips per group)
-    const stripsPerGroup = 7;
-    const groups = scaleX / stripsPerGroup;
-    const remapped = remapToPhysicalLayout(rgb, scaleX, scaleY, groups, stripsPerGroup);
-    console.log(`Remapped for physical layout: ${remapped.length} bytes (${groups} groups, ${stripsPerGroup} strips/group)`);
+    const strips = getTotalStrips()
+    const remapped = remapToPhysicalLayout(rgb, scaleX, scaleY);
+    console.log(`Remapped for physical layout: ${remapped.length} bytes ${strips} strips`);
     if (saveImages) {
-        saveImage(remapped, scaleY, scaleX, 'remapped', true);
+        saveImage(remapped, scaleY, scaleX, 'remapped_with_fixes', true);
     }
 
-    console.log(`Remapped for physical layout: ${remapped.length} bytes (${groups} groups, ${stripsPerGroup} strips/group)`);
-
-        // Apply group offsets (temporary fix for wiring quirks)
-    // Positive offset: add dummy pixels at start
-    // Negative offset: skip pixels from the source data
-    const GROUP_OFFSETS = [0, 1, -1, -1]; // Group 0 adds 1 pixel, Group 1 skips 1 pixel, Group 2 no change
-    
-    // Calculate total size with offsets
-    const totalOffsetBytes = GROUP_OFFSETS.reduce((sum, o) => sum + (o > 0 ? o * 3 : 0), 0);
-    const withOffsets = new Uint8Array(remapped.length + totalOffsetBytes);
-
-    let readPos = 0;
-    let writePos = 0;
-    const ledsPerGroup = (scaleX / groups) * scaleY;
-
-    for (let g = 0; g < groups; g++) {
-        const offset = GROUP_OFFSETS[g] || 0;
-        
-        if (offset > 0) {
-            // Positive offset: add dummy pixels (zeros) at start
-            writePos += offset * 3;
-        } else if (offset < 0) {
-            // Negative offset: skip pixels from source
-            readPos += Math.abs(offset) * 3;
-        }
-
-        const groupBytes = ledsPerGroup * 3;
-        const bytesToCopy = Math.min(groupBytes, remapped.length - readPos);
-        withOffsets.set(remapped.subarray(readPos, readPos + bytesToCopy), writePos);
-
-        readPos += groupBytes;
-        writePos += bytesToCopy;
-    }
-
-    console.log(`With offsets: ${withOffsets.length} bytes (offsets: ${GROUP_OFFSETS.join(', ')})`);
-    if (saveImages) {
-        saveImage(withOffsets, scaleY, scaleX, 'offset', true);
-    }
-
-    const packet = createPacket(withOffsets);
+    const packet = createPacket(remapped);
 
     await transmit.connect();
     console.log('Sending image to LEDs...');
