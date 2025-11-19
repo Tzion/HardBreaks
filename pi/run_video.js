@@ -33,16 +33,16 @@ async function runVideo(videoPath, settings) {
     setInterval(() => {
         manager.render();
         
-        // Save preview frame occasionally
-        if (frameCount % 1 === 0) {
-            const outPath = 'last-frame-video.png';
-            try {
-                fs.writeFileSync(outPath, canvas.toBuffer('image/png'));
-                console.log(`Frame ${frameCount}: Saved preview to ${outPath}`);
-            } catch (err) {
-                console.error('Failed to save frame:', err);
-            }
-        }
+        // Save preview frame occasionally -- SLOW DOWN THE SYSTEM - JUST FOR DEBUGGING
+        // if (frameCount % 50 === 0) {
+        //     const outPath = 'last-frame-video.png';
+        //     try {
+        //         fs.writeFileSync(outPath, canvas.toBuffer('image/png'));
+        //         console.log(`Frame ${frameCount}: Saved preview to ${outPath}`);
+        //     } catch (err) {
+        //         console.error('Failed to save frame:', err);
+        //     }
+        // }
 
         // Process and transmit to LED matrix
         const imageData = context.getImageData(0, 0, width, height);
@@ -70,7 +70,7 @@ if (!fs.existsSync(videoPath)) {
 const settings = {
     dimensions: [1080, 1080],
     animate: true,
-    fps: 1,
+    fps: 5,
     loop: true
 };
 
