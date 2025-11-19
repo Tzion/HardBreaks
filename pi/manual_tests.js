@@ -21,6 +21,13 @@ function markerFrame(index, color = 'green') {
     const padCount = index;
     var padding = new Uint8Array(padCount * 3);
     var frame = new Uint8Array(marker.length + padding.length);
+
+    // temp- delete after findg padding
+    // var stripsPadding = new Uint8Array(3 * (273 * 2 + 0));
+    // frame = new Uint8Array(marker.length + padding.length + stripsPadding.length);
+    // padding = new Uint8Array([...stripsPadding, ...padding]);
+    // end of
+
     frame.set(padding, 0);
     frame.set(marker, padding.length);
     console.log(frame)

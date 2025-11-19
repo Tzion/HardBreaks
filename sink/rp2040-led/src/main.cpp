@@ -4,6 +4,7 @@
 
 #define HEARTBEAT_MS 1000
 
+//order: 7 -> 9 -> 8
 // LED Configuration
 #define STRIP_1 7
 #define STRIP_2 9
@@ -13,10 +14,11 @@
 #define NUM_LEDS (NUM_GROUPS * NUM_LEDS_PER_GROUP)
 #define LED_TYPE WS2815
 #define COLOR_ORDER RGB
+#define OFFSET_PIXELS 1 // requires to handle the physical world
 
 // Frame Configuration
 #define PIXEL_SIZE 3
-#define FRAME_SIZE (NUM_LEDS * PIXEL_SIZE)
+#define FRAME_SIZE ((NUM_LEDS + OFFSET_PIXELS) * PIXEL_SIZE)
 #define MAGIC_BYTE_1 0xFF
 #define MAGIC_BYTE_2 0xAA
 

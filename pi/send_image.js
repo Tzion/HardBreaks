@@ -51,7 +51,46 @@ async function sendImageToLEDs(scaleX, scaleY, imagePath) {
         saveImage(remapped, scaleY, scaleX, 'remapped', true);
     }
 
-    const packet = createPacket(remapped);
+    console.log(`Remapped for physical layout: ${remapped.length} bytes (${groups} groups, ${stripsPerGroup} strips/group)`);
+
+        // Apply group offsets (temporary fix for wiring quirks)
+    // Positive offset: add dummy pixels at start
+    // Negative offset: skip pixels from the source data
+    const GROUP_OFFSETS = [1, -1, 0]; // Group 0 adds 1 pixel, Group 1 skips 1 pixel, Group 2 no change
+    
+    // Calculate total size with offsets
+    const totalOffsetBytes = GROUP_OFFSETS.reduce((sum, o) => sum + (o > 0 ? o * 3 : 0), 0);
+    const withOffsets = new Uint8Array(remapped.length + totalOffsetBytes);
+
+    let readPos = 0;
+    let writePos = 0;
+    const ledsPerGroup = (scaleX / groups) * scaleY;
+
+    for (let g = 0; g < groups; g++) {
+        const offset = GROUP_OFFSETS[g] || 0;
+        
+        if (offset > 0) {
+            // Positive offset: add dummy pixels (zeros) at start
+            writePos += offset * 3;
+        } else if (offset < 0) {
+            // Negative offset: skip pixels from source
+            readPos += Math.abs(offset) * 3;
+        }
+
+        const groupBytes = ledsPerGroup * 3;
+        const bytesToCopy = Math.min(groupBytes, remapped.length - readPos);
+        withOffsets.set(remapped.subarray(readPos, readPos + bytesToCopy), writePos);
+
+        readPos += groupBytes;
+        writePos += bytesToCopy;
+    }
+
+    console.log(`With offsets: ${withOffsets.length} bytes (offsets: ${GROUP_OFFSETS.join(', ')})`);
+    if (saveImages) {
+        saveImage(withOffsets, scaleY, scaleX, 'offset', true);
+    }
+
+    const packet = createPacket(withOffsets);
 
     await transmit.connect();
     console.log('Sending image to LEDs...');
@@ -67,7 +106,7 @@ async function sendImageToLEDs(scaleX, scaleY, imagePath) {
 function saveImage(data, width, height, namePrefix, addAlphaChannel = false) {
     const outCanvas = createCanvas(width, height);
     const outCtx = outCanvas.getContext('2d');
-    
+
     if (addAlphaChannel) {
         // Convert RGB Uint8Array to RGBA ImageData
         const imageData = outCtx.createImageData(width, height);
@@ -82,7 +121,7 @@ function saveImage(data, width, height, namePrefix, addAlphaChannel = false) {
         // Data is already ImageData
         outCtx.putImageData(data, 0, 0);
     }
-    
+
     const outBuffer = outCanvas.toBuffer('image/png');
     const filename = `${namePrefix}__send_image.png`;
     fs.writeFileSync(filename, outBuffer);
