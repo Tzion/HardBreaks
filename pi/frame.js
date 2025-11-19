@@ -56,24 +56,24 @@ export const LED_CONFIG = {
             strips: 6,  // Only 6 strips for now
             offset: 0
         },
-        // {
-        //     id: 1,
-        //     pin: 7,
-        //     strips: 7,
-        //     offset: 1  // Add 1 dummy pixel at start
-        // },
-        // {
-        //     id: 2,
-        //     pin: 9,
-        //     strips: 7,
-        //     offset: -1
-        // },
-        // {
-        //     id: 3,
-        //     pin: 8,
-        //     strips: 7,
-        //     offset: 0
-        // }
+        {
+            id: 1,
+            pin: 7,
+            strips: 8,
+            offset: 1  // Add 1 dummy pixel at start
+        },
+        {
+            id: 2,
+            pin: 9,
+            strips: 7,
+            offset: -1
+        },
+        {
+            id: 3,
+            pin: 8,
+            strips: 7,
+            offset: 0
+        }
     ]
 };
 

@@ -46,7 +46,8 @@ async function sendImageToLEDs(scaleX, scaleY, imagePath) {
     const remapped = remapToPhysicalLayout(rgb, scaleX, scaleY);
     console.log(`Remapped for physical layout: ${remapped.length} bytes ${strips} strips`);
     if (saveImages) {
-        saveImage(remapped, scaleY, scaleX, 'remapped_with_fixes', true);
+        saveImage(remapped, scaleX, scaleY, 'remapped_with_fixes', true);
+        saveImage(remapped, scaleY, scaleX, 'remapped_with_fixes_reversed_scaled', true);
     }
 
     const packet = createPacket(remapped);
