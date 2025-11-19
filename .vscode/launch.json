@@ -57,5 +57,20 @@
             ],
             "console": "integratedTerminal"
         }
+        ,
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Run Video",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/pi/run_video.js",
+            "args": [
+                // "pi/art/videos/cooling1.mp4" // Optionally specify a video file here
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        }
     ]
 }
