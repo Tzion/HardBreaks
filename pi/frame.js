@@ -59,7 +59,7 @@ export const LED_CONFIG = {
         {
             id: 1,
             pin: 7,
-            strips: 8,
+            strips: 7,
             offset: 1  // Add 1 dummy pixel at start
         },
         {
@@ -142,12 +142,13 @@ export function remapImageToStrips(rgb, width, height) {
  * @returns {Uint8Array} - Final RGB array with physical fixes applied
  */
 export function applyPhysicalFixes(remapped, height) {
-    // Calculate output size
+    // Calculate output size accounting for offsets
     let outputSize = 0;
     for (const group of LED_CONFIG.groups) {
         const groupLEDs = group.strips * height;
-        const positiveOffset = group.offset > 0 ? group.offset : 0;
-        outputSize += (groupLEDs + positiveOffset) * 3;
+        const offset = group.offset || 0;
+        // Positive offset adds dummy pixels, negative offset removes pixels
+        outputSize += (groupLEDs + offset) * 3;
     }
 
     const output = new Uint8Array(outputSize);
@@ -156,7 +157,6 @@ export function applyPhysicalFixes(remapped, height) {
 
     for (const group of LED_CONFIG.groups) {
         const groupLEDs = group.strips * height;
-        const groupBytes = groupLEDs * 3;
         const offset = group.offset || 0;
 
         console.log(`Group ${group.id}: ${group.strips} strips, offset=${offset}`);
@@ -165,20 +165,35 @@ export function applyPhysicalFixes(remapped, height) {
             // Add dummy pixels (zeros) at start
             console.log(`  Adding ${offset} dummy pixels`);
             writePos += offset * 3;
+            
+            // Copy full group
+            const groupBytes = groupLEDs * 3;
+            output.set(remapped.subarray(readPos, readPos + groupBytes), writePos);
+            readPos += groupBytes;
+            writePos += groupBytes;
+            
         } else if (offset < 0) {
             // Skip pixels from source
-            console.log(`  Skipping ${Math.abs(offset)} pixels`);
-            readPos += Math.abs(offset) * 3;
+            const skipPixels = Math.abs(offset);
+            console.log(`  Skipping ${skipPixels} pixels from source`);
+            readPos += skipPixels * 3;
+            
+            // Copy reduced amount (group size minus skipped pixels)
+            const reducedBytes = (groupLEDs - skipPixels) * 3;
+            output.set(remapped.subarray(readPos, readPos + reducedBytes), writePos);
+            readPos += reducedBytes;
+            writePos += reducedBytes;
+            
+        } else {
+            // No offset, copy full group
+            const groupBytes = groupLEDs * 3;
+            output.set(remapped.subarray(readPos, readPos + groupBytes), writePos);
+            readPos += groupBytes;
+            writePos += groupBytes;
         }
-
-        // Copy group data
-        const bytesToCopy = Math.min(groupBytes, remapped.length - readPos);
-        output.set(remapped.subarray(readPos, readPos + bytesToCopy), writePos);
-
-        readPos += groupBytes;
-        writePos += bytesToCopy;
     }
 
+    console.log(`Applied physical fixes: read ${readPos} bytes, wrote ${writePos} bytes (output size: ${output.length})`);
     return output;
 }
 

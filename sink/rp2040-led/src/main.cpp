@@ -11,7 +11,7 @@
 #define STRIP_4 8
 #define NUM_LEDS_PER_GROUP (7 * 39)
 #define NUM_LEDS_IN_MIDDLE_GROUP (6 * 39)
-#define NUM_NORMAL_GROUPS 4
+#define NUM_NORMAL_GROUPS 3
 #define NUM_LEDS (NUM_NORMAL_GROUPS * NUM_LEDS_PER_GROUP + NUM_LEDS_IN_MIDDLE_GROUP)
 #define LED_TYPE WS2815
 #define COLOR_ORDER RGB
@@ -108,24 +108,27 @@ void receiveFrame()
       receivedBytes = 0;
       calculatedChecksum = 0;
       parseState = WAIT_DATA;
-      printf("Expecting %u bytes\n", expectedLength);
+      printf("Expecting %u bytes of data\n", expectedLength);
       break;
 
     case WAIT_DATA:
-      if (receivedBytes < expectedLength && receivedBytes < FRAME_SIZE)
+      if (receivedBytes < expectedLength)
       {
-        frameBuffer[receivedBytes++] = byte;
-        calculatedChecksum = (calculatedChecksum + byte) & 0xFF;
-
-        if (receivedBytes >= expectedLength)
+        if (receivedBytes < FRAME_SIZE)
         {
-          parseState = WAIT_CHECKSUM;
+          frameBuffer[receivedBytes++] = byte;
+          calculatedChecksum = (calculatedChecksum + byte) & 0xFF;
+
+          if (receivedBytes >= expectedLength)
+          {
+            parseState = WAIT_CHECKSUM;
+          }
         }
-      }
-      else
-      {
-        printf("Buffer overflow!\n");
-        parseState = WAIT_MAGIC_1;
+        else
+        {
+          printf("Buffer overflow! Expected %u bytes but FRAME_SIZE is only %u\n", expectedLength, FRAME_SIZE);
+          parseState = WAIT_MAGIC_1;
+        }
       }
       break;
 
