@@ -127,9 +127,6 @@ export function remapImageToStrips(rgb, width, height) {
 
     // Process each group separately
     for (const group of LED_CONFIG.groups) {
-        console.log(`\nGroup ${group.id} (${group.strips} strips):`);
-        console.log(`  Reading columns ${globalStripIndex} to ${globalStripIndex + group.strips - 1}`);
-
         // Process strips within this group IN REVERSE ORDER
         // Physical: last strip is leftmost, first strip is rightmost
         for (let stripInGroup = 0; stripInGroup < group.strips; stripInGroup++) {
@@ -161,7 +158,7 @@ export function remapImageToStrips(rgb, width, height) {
         globalStripIndex += group.strips;
     }
 
-    console.log(`\nTotal: remapped ${globalStripIndex} strips, ${outputLEDIndex} LEDs`);
+    console.log(`Total: remapped ${globalStripIndex} strips, ${outputLEDIndex} LEDs`);
     return outputRGB;
 }
 
@@ -190,8 +187,6 @@ export function applyPhysicalFixes(remapped, height) {
     for (const group of LED_CONFIG.groups) {
         const groupLEDs = group.strips * height;
         const offset = group.offset || 0;
-
-        console.log(`Group ${group.id}: ${group.strips} strips, offset=${offset}`);
 
         if (offset > 0) {
             // Add dummy pixels (zeros) at start
