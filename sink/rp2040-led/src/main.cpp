@@ -4,17 +4,17 @@
 
 #define HEARTBEAT_MS 1000
 
-//order: 7 -> 9 -> 8
 // LED Configuration
-#define STRIP_1 7
-#define STRIP_2 9
-#define STRIP_3 8
+#define STRIP_1 28
+#define STRIP_2 7
+#define STRIP_3 9
+#define STRIP_4 8
 #define NUM_LEDS_PER_GROUP (7 * 39)
-#define NUM_GROUPS 3
+#define NUM_GROUPS 4
 #define NUM_LEDS (NUM_GROUPS * NUM_LEDS_PER_GROUP)
 #define LED_TYPE WS2815
 #define COLOR_ORDER RGB
-#define OFFSET_PIXELS 1 // requires to handle the physical world
+#define OFFSET_PIXELS 0 // requires to handle the physical world
 
 // Frame Configuration
 #define PIXEL_SIZE 3
@@ -35,14 +35,16 @@ void setup()
 {
   startSerial();
   printf("Testing %d groups, %d LEDs total\n", NUM_GROUPS, NUM_LEDS);
-  printf("STRIP_1 pin: %d, STRIP_2 pin: %d, TRIP_3 pin:\n", STRIP_1, STRIP_2, STRIP_3);
+  printf("STRIP_1 pin: %d, STRIP_2 pin: %d, STRIP_3 pin: %d, STRIP_4 pin: %d\n", STRIP_1, STRIP_2, STRIP_3, STRIP_4);
 
   pinMode(STRIP_1, OUTPUT);
   pinMode(STRIP_2, OUTPUT);
   pinMode(STRIP_3, OUTPUT);
+  pinMode(STRIP_4, OUTPUT);
   FastLED.addLeds<LED_TYPE, STRIP_1, COLOR_ORDER>(leds, 0, NUM_LEDS_PER_GROUP);
   FastLED.addLeds<LED_TYPE, STRIP_2, COLOR_ORDER>(leds, NUM_LEDS_PER_GROUP, NUM_LEDS_PER_GROUP);
   FastLED.addLeds<LED_TYPE, STRIP_3, COLOR_ORDER>(leds, NUM_LEDS_PER_GROUP * 2, NUM_LEDS_PER_GROUP);
+  FastLED.addLeds<LED_TYPE, STRIP_4, COLOR_ORDER>(leds, NUM_LEDS_PER_GROUP * 3, NUM_LEDS_PER_GROUP);
 
   FastLED.setBrightness(50);
   FastLED.clear();

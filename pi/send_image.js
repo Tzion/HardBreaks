@@ -56,7 +56,7 @@ async function sendImageToLEDs(scaleX, scaleY, imagePath) {
         // Apply group offsets (temporary fix for wiring quirks)
     // Positive offset: add dummy pixels at start
     // Negative offset: skip pixels from the source data
-    const GROUP_OFFSETS = [1, -1, 0]; // Group 0 adds 1 pixel, Group 1 skips 1 pixel, Group 2 no change
+    const GROUP_OFFSETS = [0, 1, -1, -1]; // Group 0 adds 1 pixel, Group 1 skips 1 pixel, Group 2 no change
     
     // Calculate total size with offsets
     const totalOffsetBytes = GROUP_OFFSETS.reduce((sum, o) => sum + (o > 0 ? o * 3 : 0), 0);
