@@ -12,19 +12,20 @@ async function runVideo(videoPath, settings) {
     const [width, height] = settings.dimensions;
     const canvas = createCanvas(width, height);
 
-    // Create video animation
-    const videoSketch = () => createVideoAnimation(videoPath, {
+    // Wait for all frames to be loaded and get the animation function
+    console.log('Preparing video frames, please wait...');
+    const videoSketch = await createVideoAnimation(videoPath, {
         fps: settings.fps,
         loop: settings.loop !== false
     });
+    console.log('All frames loaded. Starting playback.');
 
-    const manager = await canvasSketch(videoSketch, {
+    const manager = await canvasSketch(() => videoSketch, {
         ...settings,
         canvas
     });
 
     const { context } = manager.props;
-    
     // Connect to LED controller
     await transmit.connect();
 
@@ -32,7 +33,7 @@ async function runVideo(videoPath, settings) {
     let frameCount = 0;
     setInterval(() => {
         manager.render();
-        
+
         // Save preview frame occasionally -- SLOW DOWN THE SYSTEM - JUST FOR DEBUGGING
         // if (frameCount % 50 === 0) {
         //     const outPath = 'last-frame-video.png';
@@ -68,9 +69,9 @@ if (!fs.existsSync(videoPath)) {
 }
 
 const settings = {
-    dimensions: [1080, 1080],
+    dimensions: [490, 390],
     animate: true,
-    fps: 5,
+    fps: 10,
     loop: true
 };
 

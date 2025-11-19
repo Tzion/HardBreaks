@@ -57,44 +57,22 @@ async function extractFrames(videoPath, fps = 3, outputDir = '/tmp/video-frames'
  * @param {boolean} options.loop - Whether to loop the video (default: true)
  * @returns {Function} Canvas-sketch animation function
  */
-export function createVideoAnimation(videoPath, options = {}) {
+export async function createVideoAnimation(videoPath, options = {}) {
     const { fps = 30, loop = true } = options;
     let frames = [];
     let currentFrame = 0;
-    let ready = false;
 
-    // Initialize - extract frames
-    (async () => {
-        try {
-            const framePaths = await extractFrames(videoPath, fps);
-
-            // Load all frames as images
-            console.log('Loading frames into memory...');
-            frames = await Promise.all(
-                framePaths.map(async (framePath) => {
-                    return await loadImage(framePath);
-                })
-            );
-
-            console.log(`Loaded ${frames.length} frames, ready to play`);
-            ready = true;
-        } catch (error) {
-            console.error('Failed to load video:', error);
-        }
-    })();
+    // Extract and load frames before returning the animation function
+    const framePaths = await extractFrames(videoPath, fps);
+    console.log('Loading frames into memory...');
+    frames = await Promise.all(
+        framePaths.map(async (framePath) => {
+            return await loadImage(framePath);
+        })
+    );
+    console.log(`Loaded ${frames.length} frames, ready to play`);
 
     return ({ context, width, height }) => {
-        if (!ready || frames.length === 0) {
-            // Show loading screen
-            context.fillStyle = 'black';
-            context.fillRect(0, 0, width, height);
-            context.fillStyle = 'white';
-            context.font = '20px Arial';
-            context.textAlign = 'center';
-            context.fillText('Loading video...', width / 2, height / 2);
-            return;
-        }
-
         // Clear canvas
         context.fillStyle = 'black';
         context.fillRect(0, 0, width, height);
@@ -137,7 +115,7 @@ const sketch = () => {
 const isBrowser = typeof window !== 'undefined';
 if (isBrowser) {
     const settings = {
-        dimensions: [1080, 1080],
+        dimensions: [490, 390],
         animate: true,
         fps: 30
     };
