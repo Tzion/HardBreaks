@@ -127,16 +127,25 @@ export function remapImageToStrips(rgb, width, height) {
 
     // Process each group separately
     for (const group of LED_CONFIG.groups) {
-        // Process strips within this group
+        console.log(`\nGroup ${group.id} (${group.strips} strips):`);
+        console.log(`  Reading columns ${globalStripIndex} to ${globalStripIndex + group.strips - 1}`);
+
+        // Process strips within this group IN REVERSE ORDER
+        // Physical: last strip is leftmost, first strip is rightmost
         for (let stripInGroup = 0; stripInGroup < group.strips; stripInGroup++) {
-            const isReversed = stripInGroup % 2 === 1; // Odd strips WITHIN GROUP reversed
+            // Calculate which column to read from (reversed within group)
+            const stripIndexInGroup = (group.strips - 1) - stripInGroup;
+            const srcColumn = globalStripIndex + stripIndexInGroup;
+
+            // Serpentine: odd strips (by physical position) are reversed
+            const isReversed = stripInGroup % 2 === 1;
 
             for (let row = 0; row < height; row++) {
-                // Source: horizontal raster scan using global strip index
-                const srcPixel = row * width + globalStripIndex;
+                // Source: read from the reversed column position
+                const srcPixel = row * width + srcColumn;
                 const srcOffset = srcPixel * 3;
 
-                // Destination: vertical serpentine
+                // Destination: write sequentially
                 const dstRow = isReversed ? (height - 1 - row) : row;
                 const dstOffset = (outputLEDIndex + dstRow) * 3;
 
@@ -146,11 +155,13 @@ export function remapImageToStrips(rgb, width, height) {
                 outputRGB[dstOffset + 2] = rgb[srcOffset + 2];
             }
 
-            globalStripIndex++;
             outputLEDIndex += height;
         }
+
+        globalStripIndex += group.strips;
     }
 
+    console.log(`\nTotal: remapped ${globalStripIndex} strips, ${outputLEDIndex} LEDs`);
     return outputRGB;
 }
 
@@ -186,25 +197,25 @@ export function applyPhysicalFixes(remapped, height) {
             // Add dummy pixels (zeros) at start
             console.log(`  Adding ${offset} dummy pixels`);
             writePos += offset * 3;
-            
+
             // Copy full group
             const groupBytes = groupLEDs * 3;
             output.set(remapped.subarray(readPos, readPos + groupBytes), writePos);
             readPos += groupBytes;
             writePos += groupBytes;
-            
+
         } else if (offset < 0) {
             // Skip pixels from source
             const skipPixels = Math.abs(offset);
             console.log(`  Skipping ${skipPixels} pixels from source`);
             readPos += skipPixels * 3;
-            
+
             // Copy reduced amount (group size minus skipped pixels)
             const reducedBytes = (groupLEDs - skipPixels) * 3;
             output.set(remapped.subarray(readPos, readPos + reducedBytes), writePos);
             readPos += reducedBytes;
             writePos += reducedBytes;
-            
+
         } else {
             // No offset, copy full group
             const groupBytes = groupLEDs * 3;
