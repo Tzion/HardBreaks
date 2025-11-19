@@ -25,7 +25,7 @@
             ],
             "program": "${workspaceFolder}/pi/send_image.js",
             "args": [
-            "14",
+            "49",
             "39",
             "pi/art/3by3.png"
             ],

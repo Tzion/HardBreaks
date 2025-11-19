@@ -23,9 +23,10 @@ function markerFrame(index, color = 'green') {
     var frame = new Uint8Array(marker.length + padding.length);
 
     // temp- delete after findg padding
-    // var stripsPadding = new Uint8Array(3 * (273 * 2 + 0));
-    // frame = new Uint8Array(marker.length + padding.length + stripsPadding.length);
-    // padding = new Uint8Array([...stripsPadding, ...padding]);
+    // var stripsPadding = new Uint8Array(3 * (312 + 273 * 2 + 234 + 1));
+    var stripsPadding = new Uint8Array(3 * (312 + 273 * 4 + 234 + 0 ));
+    frame = new Uint8Array(marker.length + padding.length + stripsPadding.length);
+    padding = new Uint8Array([...stripsPadding, ...padding]);
     // end of
 
     frame.set(padding, 0);

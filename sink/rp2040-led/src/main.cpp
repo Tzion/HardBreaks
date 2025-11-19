@@ -5,21 +5,37 @@
 #define HEARTBEAT_MS 1000
 
 // LED Configuration
-#define STRIP_1 28
-#define STRIP_2 7
-#define STRIP_3 9
-#define STRIP_4 8
-#define NUM_LEDS_PER_GROUP (7 * 39)
-#define NUM_LEDS_IN_MIDDLE_GROUP (6 * 39)
-#define NUM_NORMAL_GROUPS 3
-#define NUM_LEDS (NUM_NORMAL_GROUPS * NUM_LEDS_PER_GROUP + NUM_LEDS_IN_MIDDLE_GROUP)
+// Pin assignments (matching pi/frame.js LED_CONFIG)
+#define STRIP_1 22 // Group 0: 8 strips (big group)
+#define STRIP_2 23 // Group 1: 7 strips
+#define STRIP_3 27 // Group 2: 7 strips
+#define STRIP_4 28 // Group 3: 6 strips (small group)
+#define STRIP_5 7  // Group 4: 7 strips
+#define STRIP_6 9  // Group 5: 7 strips
+#define STRIP_7 8  // Group 6: 7 strips
+
+#define LEDS_IN_STRIP 39
 #define LED_TYPE WS2815
 #define COLOR_ORDER RGB
-#define OFFSET_PIXELS 0 // requires to handle the physical world
+
+// Group configurations (matching pi/frame.js LED_CONFIG order)
+#define NUM_LEDS_GROUP_0 (8 * LEDS_IN_STRIP) // 312 LEDs - big group (pin 22)
+#define NUM_LEDS_GROUP_1 (7 * LEDS_IN_STRIP) // 273 LEDs (pin 23)
+#define NUM_LEDS_GROUP_2 (7 * LEDS_IN_STRIP) // 273 LEDs (pin 27)
+#define NUM_LEDS_GROUP_3 (6 * LEDS_IN_STRIP) // 234 LEDs - small group (pin 28)
+#define NUM_LEDS_GROUP_4 (7 * LEDS_IN_STRIP) // 273 LEDs (pin 7)
+#define NUM_LEDS_GROUP_5 (7 * LEDS_IN_STRIP) // 273 LEDs (pin 9)
+#define NUM_LEDS_GROUP_6 (7 * LEDS_IN_STRIP) // 273 LEDs (pin 8)
+
+// Total LEDs (8+7+7+6+7+7+7 = 49 strips × 39 LEDs = 1911 LEDs)
+#define NUM_LEDS (NUM_LEDS_GROUP_0 + NUM_LEDS_GROUP_1 + NUM_LEDS_GROUP_2 + \
+                  NUM_LEDS_GROUP_3 + NUM_LEDS_GROUP_4 + NUM_LEDS_GROUP_5 + \
+                  NUM_LEDS_GROUP_6)
 
 // Frame Configuration
 #define PIXEL_SIZE 3
-#define FRAME_SIZE ((NUM_LEDS + OFFSET_PIXELS) * PIXEL_SIZE)
+#define OFFSET_PIXELS 10                                     // Extra buffer for positive offsets from Pi (adjust as needed)
+#define FRAME_SIZE ((NUM_LEDS + OFFSET_PIXELS) * PIXEL_SIZE) // 1911 * 3 = 5733 + offset buffer
 #define MAGIC_BYTE_1 0xFF
 #define MAGIC_BYTE_2 0xAA
 
@@ -35,17 +51,54 @@ void receiveFrame();
 void setup()
 {
   startSerial();
-  printf("Testing %d groups, %d LEDs total\n", NUM_NORMAL_GROUPS, NUM_LEDS);
-  printf("STRIP_1 pin: %d, STRIP_2 pin: %d, STRIP_3 pin: %d, STRIP_4 pin: %d\n", STRIP_1, STRIP_2, STRIP_3, STRIP_4);
+  printf("LED Matrix Configuration:\n");
+  printf("  Total LEDs: %d (49 strips × 39 LEDs)\n", NUM_LEDS);
+  printf("  Group 0 (pin %d): %d LEDs (8 strips)\n", STRIP_1, NUM_LEDS_GROUP_0);
+  printf("  Group 1 (pin %d): %d LEDs (7 strips)\n", STRIP_2, NUM_LEDS_GROUP_1);
+  printf("  Group 2 (pin %d): %d LEDs (7 strips)\n", STRIP_3, NUM_LEDS_GROUP_2);
+  printf("  Group 3 (pin %d): %d LEDs (6 strips)\n", STRIP_4, NUM_LEDS_GROUP_3);
+  printf("  Group 4 (pin %d): %d LEDs (7 strips)\n", STRIP_5, NUM_LEDS_GROUP_4);
+  printf("  Group 5 (pin %d): %d LEDs (7 strips)\n", STRIP_6, NUM_LEDS_GROUP_5);
+  printf("  Group 6 (pin %d): %d LEDs (7 strips)\n", STRIP_7, NUM_LEDS_GROUP_6);
+  printf("  Frame size: %d bytes\n", FRAME_SIZE);
 
   pinMode(STRIP_1, OUTPUT);
   pinMode(STRIP_2, OUTPUT);
   pinMode(STRIP_3, OUTPUT);
   pinMode(STRIP_4, OUTPUT);
-  FastLED.addLeds<LED_TYPE, STRIP_1, COLOR_ORDER>(leds, 0, NUM_LEDS_IN_MIDDLE_GROUP);
-  FastLED.addLeds<LED_TYPE, STRIP_2, COLOR_ORDER>(leds, NUM_LEDS_IN_MIDDLE_GROUP, NUM_LEDS_PER_GROUP);
-  FastLED.addLeds<LED_TYPE, STRIP_3, COLOR_ORDER>(leds, NUM_LEDS_IN_MIDDLE_GROUP + NUM_LEDS_PER_GROUP, NUM_LEDS_PER_GROUP);
-  FastLED.addLeds<LED_TYPE, STRIP_4, COLOR_ORDER>(leds, NUM_LEDS_IN_MIDDLE_GROUP + NUM_LEDS_PER_GROUP * 2, NUM_LEDS_PER_GROUP);
+  pinMode(STRIP_5, OUTPUT);
+  pinMode(STRIP_6, OUTPUT);
+  pinMode(STRIP_7, OUTPUT);
+
+  // Configure LED groups (order must match pi/frame.js LED_CONFIG)
+  uint16_t offset = 0;
+
+  // Group 0: 8 strips on pin 22
+  FastLED.addLeds<LED_TYPE, STRIP_1, COLOR_ORDER>(leds, offset, NUM_LEDS_GROUP_0);
+  offset += NUM_LEDS_GROUP_0;
+
+  // Group 1: 7 strips on pin 23
+  FastLED.addLeds<LED_TYPE, STRIP_2, COLOR_ORDER>(leds, offset, NUM_LEDS_GROUP_1);
+  offset += NUM_LEDS_GROUP_1;
+
+  // Group 2: 7 strips on pin 27
+  FastLED.addLeds<LED_TYPE, STRIP_3, COLOR_ORDER>(leds, offset, NUM_LEDS_GROUP_2);
+  offset += NUM_LEDS_GROUP_2;
+
+  // Group 3: 6 strips on pin 28
+  FastLED.addLeds<LED_TYPE, STRIP_4, COLOR_ORDER>(leds, offset, NUM_LEDS_GROUP_3);
+  offset += NUM_LEDS_GROUP_3;
+
+  // Group 4: 7 strips on pin 7
+  FastLED.addLeds<LED_TYPE, STRIP_5, COLOR_ORDER>(leds, offset, NUM_LEDS_GROUP_4);
+  offset += NUM_LEDS_GROUP_4;
+
+  // Group 5: 7 strips on pin 9
+  FastLED.addLeds<LED_TYPE, STRIP_6, COLOR_ORDER>(leds, offset, NUM_LEDS_GROUP_5);
+  offset += NUM_LEDS_GROUP_5;
+
+  // Group 6: 7 strips on pin 8
+  FastLED.addLeds<LED_TYPE, STRIP_7, COLOR_ORDER>(leds, offset, NUM_LEDS_GROUP_6);
 
   FastLED.setBrightness(50);
   FastLED.clear();
@@ -181,6 +234,8 @@ void showSinglePixel()
   }
 }
 
+      printf("Frame %lu: Position %lu = RGB(%u, %u, %u)\n",
+             frameCount, currentPosition, r, g, b);
 void heartbeat()
 {
   if (millis() % HEARTBEAT_MS < HEARTBEAT_MS / 10)

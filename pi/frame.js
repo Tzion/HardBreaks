@@ -46,30 +46,51 @@ export function createPacket(rgbData) {
 /**
  * Physical LED strip configuration
  * Defines the actual wiring for each group including offsets and strip counts
+ * MUST match sink/rp2040-led/src/main.cpp configuration
  */
 export const LED_CONFIG = {
     ledsPerStrip: 39,
     groups: [
         {
             id: 0,
-            pin: 28,
-            strips: 6,  // Only 6 strips for now
+            pin: 22,
+            strips: 8,  // Big group
             offset: 0
         },
         {
             id: 1,
-            pin: 7,
+            pin: 23,
             strips: 7,
-            offset: 1  // Add 1 dummy pixel at start
+            offset: 0
         },
         {
             id: 2,
-            pin: 9,
+            pin: 27,
             strips: 7,
-            offset: -1
+            offset: 0
         },
         {
             id: 3,
+            pin: 28,
+            strips: 6,  // Small group
+            offset: 0
+        },
+        {
+            id: 4,
+            pin: 7,
+            strips: 7,
+            offset: 1
+            // offset: 0
+        },
+        {
+            id: 5,
+            pin: 9,
+            strips: 7,
+            offset: -1
+            // offset: 0
+        },
+        {
+            id: 6,
             pin: 8,
             strips: 7,
             offset: 0
