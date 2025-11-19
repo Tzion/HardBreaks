@@ -234,8 +234,6 @@ void showSinglePixel()
   }
 }
 
-      printf("Frame %lu: Position %lu = RGB(%u, %u, %u)\n",
-             frameCount, currentPosition, r, g, b);
 void heartbeat()
 {
   if (millis() % HEARTBEAT_MS < HEARTBEAT_MS / 10)
