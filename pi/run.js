@@ -2,10 +2,11 @@
 import canvasSketch from 'canvas-sketch';
 import { createCanvas } from 'canvas';
 import * as transmit from './transmit.js';
-import crackAnimation from './art/crack.js';
 import * as pixelize from './pixelize.js';
 import { toRGB, createPacket, remapToPhysicalLayout } from './frame.js';
 import fs from 'fs';
+import crackAnimation from './art/crack.js';
+import heartbreaksAnimation from './art/hardbreaks.js';
 
 async function runSketchAnimation(sketchAnimation, settings) {
     const [width, height] = settings.dimensions;
@@ -43,4 +44,4 @@ const settings = {
     fps: 3
 };
 
-runSketchAnimation(crackAnimation, settings)
+runSketchAnimation(heartbreaksAnimation, settings)
