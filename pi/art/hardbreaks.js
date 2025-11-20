@@ -17,12 +17,9 @@ const STATES = {
 function generateConfig() {
   return {
     // Fixed timing parameters
-    BPM: 50,                  // heart beats per minute in BEATING state
-    BEATS_BEFORE_HALTING: 4,  // number of full beats before halting
-    HALT_DURATION_MS: 1500,   // how long to stay halted (ms)
-    BEAT_AMPLITUDE: 0.25,     // 25% enlargement at peak
-    CRACK_COUNT: 2,           // number of cracks to generate
-    CRACK_DURATION_MS: 2800,  // duration of crack growth animation
+    BPM: random.rangeFloor(50, 120),  // heart beats per minute in BEATING state
+    BEAT_AMPLITUDE: random.range(0.1, 0.35),     // % enlargement at peak
+    CRACK_COUNT: random.rangeFloor(1, 3),         // number of cracks to generate
     CRACK_STEPS_MIN: 12,
     CRACK_STEPS_MAX: 28,
     CRACK_NOISE_FREQ_MIN: 30,
@@ -30,14 +27,15 @@ function generateConfig() {
     CRACK_NOISE_AMP_MIN: 8,
     CRACK_NOISE_AMP_MAX: 45,
     CRACK_COLOR: 'rgba(0,0,0,0.95)', // darker fracture color
-    HEALING_DURATION_MS: 20000, // duration of healing (crack fade-out)
-    COMPLETE_DURATION_MS: 3000, // pause duration at completion before reset
-    MAX_SMALL_CYCLES: 4,       // number of small cycles before big cycle reset
-    SCAR_FADE_DURATION_MS: 3000, // time to fade out previous cycle's displacement/color
-
-    // Randomized parameters (new values each big cycle)
+    BEATS_BEFORE_HALTING: random.rangeFloor(5, 20),  // number of full beats before halting
+    CRACK_DURATION_MS: random.rangeFloor(1000, 14000),  // duration of crack growth animation
+    HALT_DURATION_MS: random.rangeFloor(500, 5000),   // how long to stay halted (ms)
+    HEALING_DURATION_MS: random.rangeFloor(1000, 18000), // duration of healing (crack fade-out)
+    MAX_SMALL_CYCLES: random.rangeFloor(2, 6),       // number of small cycles before big cycle reset
+    SCAR_FADE_DURATION_MS: random.rangeFloor(3000, 8000), // time to fade out previous cycle's displacement/color
     BASE_SIZE_FACTOR: random.range(0.1, 0.4),   // base heart size as fraction of canvas
-    CRACK_LINE_WIDTH_FACTOR: random.range(0.05, 0.25), // crack thickness
+    CRACK_LINE_WIDTH_FACTOR: random.range(0.03, 0.18), // crack thickness
+    COMPLETE_DURATION_MS: 6543, // pause duration at completion before reset
   };
 }
 
@@ -777,7 +775,7 @@ const sketch = ({ width, height }) => {
 
         console.log(`New colors - Heart: ${heartColorString}, Crack: ${crackColorString}`);
         console.log(`New heart shape - width: ${heartShape_width.toFixed(2)}, roundness: ${heartShape_roundness.toFixed(2)}, bottom: ${heartShape_bottom.toFixed(2)}`);
-        console.log(`New config - BASE_SIZE_FACTOR: ${CONFIG.BASE_SIZE_FACTOR.toFixed(3)}, CRACK_LINE_WIDTH_FACTOR: ${CONFIG.CRACK_LINE_WIDTH_FACTOR.toFixed(3)}`);
+        console.log(`New config - BPM: ${CONFIG.BPM}, BASE_SIZE_FACTOR: ${CONFIG.BASE_SIZE_FACTOR.toFixed(3)}, CRACK_LINE_WIDTH_FACTOR: ${CONFIG.CRACK_LINE_WIDTH_FACTOR.toFixed(3)}`);
       }
 
       if (currentState === STATES.CRACKING) {

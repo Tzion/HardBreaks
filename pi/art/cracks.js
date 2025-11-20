@@ -54,7 +54,7 @@ export class Crack {
     if (healProgress <= 0) return;
 
     const crackWidth = this.baseSize * this.CONFIG.CRACK_LINE_WIDTH_FACTOR;
-    const maxHealWidth = crackWidth * 2.5; // 2.5x crack width at full expansion
+    const maxHealWidth = crackWidth * 1.6; // S x crack width at full expansion
 
     // Calculate healing width based on progress
     // 0-0.5: grow from 1px to crack width (filling phase)
