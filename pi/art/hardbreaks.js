@@ -16,7 +16,7 @@ const STATES = {
 // Configuration for timing (will expand later per phase)
 const CONFIG = {
   BPM: 50,                  // heart beats per minute in BEATING state
-  BEATS_BEFORE_HALTING: 2,  // number of full beats before halting
+  BEATS_BEFORE_HALTING: 4,  // number of full beats before halting
   HALT_DURATION_MS: 1500,   // how long to stay halted (ms)
   BEAT_AMPLITUDE: 0.25,     // 25% enlargement at peak
   CRACK_COUNT: 2,           // number of cracks to generate
@@ -31,7 +31,8 @@ const CONFIG = {
   CRACK_COLOR: 'rgba(0,0,0,0.95)', // darker fracture color
   HEALING_DURATION_MS: 20000, // duration of healing (crack fade-out)
   COMPLETE_DURATION_MS: 3000, // pause duration at completion before reset
-  MAX_SMALL_CYCLES: 4        // number of small cycles before big cycle reset
+  MAX_SMALL_CYCLES: 4,       // number of small cycles before big cycle reset
+  SCAR_FADE_DURATION_MS: 3000 // time to fade out previous cycle's displacement/color
 };
 
 function drawHeart(context, cx, cy, size) {
@@ -51,30 +52,30 @@ function drawHeart(context, cx, cy, size) {
 function drawHeartWithDisplacement(context, cx, cy, size, crackPaths, healProgress) {
   context.beginPath();
   const segments = 180;
-  
+
   for (let i = 0; i <= segments; i++) {
     const t = (i / segments) * Math.PI * 2;
     const xt = 19 * Math.pow(Math.sin(t), 3);
     const yt = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 3 * Math.cos(3 * t) - 1 * Math.cos(4 * t));
-    
+
     // Base point on heart boundary
     const basePoint = { x: cx + (xt * size) / 16, y: cy + (yt * size) / 16 };
-    
+
     // Calculate total displacement from all cracks
     let displacement = 0;
     crackPaths.forEach(crack => {
       displacement += crack.getDisplacementAt(basePoint, healProgress, { x: cx, y: cy });
     });
-    
+
     // Apply displacement radially outward from center
     const angle = Math.atan2(basePoint.y - cy, basePoint.x - cx);
     const x = basePoint.x + Math.cos(angle) * displacement;
     const y = basePoint.y + Math.sin(angle) * displacement;
-    
+
     if (i === 0) context.moveTo(x, y);
     else context.lineTo(x, y);
   }
-  
+
   context.closePath();
   context.fill();
 }
@@ -82,22 +83,22 @@ function drawHeartWithDisplacement(context, cx, cy, size, crackPaths, healProgre
 // Draw heart combining accumulated displacement AND current healing displacement
 function drawHeartWithCombinedDisplacement(context, cx, cy, size, crackPaths, healProgress, boundaryCache, accumulatedDisplacements, baseSizeUsedForCache) {
   context.beginPath();
-  
+
   if (!boundaryCache || accumulatedDisplacements.length === 0) {
     // No accumulated displacement - fall back to regular healing displacement
     drawHeartWithDisplacement(context, cx, cy, size, crackPaths, healProgress);
     return;
   }
-  
+
   const scaleFactor = baseSizeUsedForCache ? size / baseSizeUsedForCache : 1;
-  
+
   for (let i = 0; i < boundaryCache.length; i++) {
     // Start with base boundary point (scaled)
     const basePoint = {
       x: cx + boundaryCache[i].x * scaleFactor,
       y: cy + boundaryCache[i].y * scaleFactor
     };
-    
+
     // Add accumulated displacement from previous cycles (scaled)
     const angle = Math.atan2(basePoint.y - cy, basePoint.x - cx);
     const accumulatedDisp = accumulatedDisplacements[i] * scaleFactor;
@@ -105,21 +106,21 @@ function drawHeartWithCombinedDisplacement(context, cx, cy, size, crackPaths, he
       x: basePoint.x + Math.cos(angle) * accumulatedDisp,
       y: basePoint.y + Math.sin(angle) * accumulatedDisp
     };
-    
+
     // Add current crack displacement
     let currentDisplacement = 0;
     crackPaths.forEach(crack => {
       currentDisplacement += crack.getDisplacementAt(displacedPoint, healProgress, { x: cx, y: cy });
     });
-    
+
     // Final position combines both displacements
     const finalX = displacedPoint.x + Math.cos(angle) * currentDisplacement;
     const finalY = displacedPoint.y + Math.sin(angle) * currentDisplacement;
-    
+
     if (i === 0) context.moveTo(finalX, finalY);
     else context.lineTo(finalX, finalY);
   }
-  
+
   context.closePath();
   context.fill();
 }
@@ -131,27 +132,27 @@ function drawHeartWithAccumulatedDisplacement(context, cx, cy, size, boundaryCac
     drawHeart(context, cx, cy, size);
     return;
   }
-  
+
   // Calculate scale factor between requested size and the size used to create the cache
   const scaleFactor = baseSizeUsedForCache ? size / baseSizeUsedForCache : 1;
-  
+
   context.beginPath();
   for (let i = 0; i < boundaryCache.length; i++) {
     const basePoint = {
       x: cx + boundaryCache[i].x * scaleFactor,
       y: cy + boundaryCache[i].y * scaleFactor
     };
-    
+
     // Apply accumulated displacement radially outward (also scaled)
     const angle = Math.atan2(basePoint.y - cy, basePoint.x - cx);
     const displacement = accumulatedDisplacements[i] * scaleFactor;
     const x = basePoint.x + Math.cos(angle) * displacement;
     const y = basePoint.y + Math.sin(angle) * displacement;
-    
+
     if (i === 0) context.moveTo(x, y);
     else context.lineTo(x, y);
   }
-  
+
   context.closePath();
   context.fill();
 }
@@ -160,30 +161,30 @@ function drawHeartWithAccumulatedDisplacement(context, cx, cy, size, boundaryCac
 function buildHeartPathWithDisplacement(context, cx, cy, size, crackPaths, healProgress) {
   context.beginPath();
   const segments = 180;
-  
+
   for (let i = 0; i <= segments; i++) {
     const t = (i / segments) * Math.PI * 2;
     const xt = 19 * Math.pow(Math.sin(t), 3);
     const yt = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 3 * Math.cos(3 * t) - 1 * Math.cos(4 * t));
-    
+
     // Base point on heart boundary
     const basePoint = { x: cx + (xt * size) / 16, y: cy + (yt * size) / 16 };
-    
+
     // Calculate total displacement from all cracks
     let displacement = 0;
     crackPaths.forEach(crack => {
       displacement += crack.getDisplacementAt(basePoint, healProgress, { x: cx, y: cy });
     });
-    
+
     // Apply displacement radially outward from center
     const angle = Math.atan2(basePoint.y - cy, basePoint.x - cx);
     const x = basePoint.x + Math.cos(angle) * displacement;
     const y = basePoint.y + Math.sin(angle) * displacement;
-    
+
     if (i === 0) context.moveTo(x, y);
     else context.lineTo(x, y);
   }
-  
+
   context.closePath();
 }
 
@@ -193,35 +194,35 @@ function buildHeartPathWithCombinedDisplacement(context, cx, cy, size, crackPath
     buildHeartPathWithDisplacement(context, cx, cy, size, crackPaths, healProgress);
     return;
   }
-  
+
   context.beginPath();
   const scaleFactor = baseSizeUsedForCache ? size / baseSizeUsedForCache : 1;
-  
+
   for (let i = 0; i < boundaryCache.length; i++) {
     const basePoint = {
       x: cx + boundaryCache[i].x * scaleFactor,
       y: cy + boundaryCache[i].y * scaleFactor
     };
-    
+
     const angle = Math.atan2(basePoint.y - cy, basePoint.x - cx);
     const accumulatedDisp = accumulatedDisplacements[i] * scaleFactor;
     const displacedPoint = {
       x: basePoint.x + Math.cos(angle) * accumulatedDisp,
       y: basePoint.y + Math.sin(angle) * accumulatedDisp
     };
-    
+
     let currentDisplacement = 0;
     crackPaths.forEach(crack => {
       currentDisplacement += crack.getDisplacementAt(displacedPoint, healProgress, { x: cx, y: cy });
     });
-    
+
     const finalX = displacedPoint.x + Math.cos(angle) * currentDisplacement;
     const finalY = displacedPoint.y + Math.sin(angle) * currentDisplacement;
-    
+
     if (i === 0) context.moveTo(finalX, finalY);
     else context.lineTo(finalX, finalY);
   }
-  
+
   context.closePath();
 }
 
@@ -244,26 +245,26 @@ function buildHeartPathWithAccumulatedDisplacement(context, cx, cy, size, bounda
     buildHeartPath(context, cx, cy, size);
     return;
   }
-  
+
   // Calculate scale factor between requested size and the size used to create the cache
   const scaleFactor = baseSizeUsedForCache ? size / baseSizeUsedForCache : 1;
-  
+
   context.beginPath();
   for (let i = 0; i < boundaryCache.length; i++) {
     const basePoint = {
       x: cx + boundaryCache[i].x * scaleFactor,
       y: cy + boundaryCache[i].y * scaleFactor
     };
-    
+
     const angle = Math.atan2(basePoint.y - cy, basePoint.x - cx);
     const displacement = accumulatedDisplacements[i] * scaleFactor;
     const x = basePoint.x + Math.cos(angle) * displacement;
     const y = basePoint.y + Math.sin(angle) * displacement;
-    
+
     if (i === 0) context.moveTo(x, y);
     else context.lineTo(x, y);
   }
-  
+
   context.closePath();
 }
 
@@ -337,23 +338,122 @@ function updateState(state, stateStartTime, elapsedMs, beatsSinceOffset, beatPha
 /**
  * Render based on current state
  */
-function renderState(context, width, height, state, elapsedMs, stateStartTime, baseSize, beatOffset, crackPaths, boundaryCache, accumulatedDisplacements) {
+function renderState(context, width, height, state, elapsedMs, stateStartTime, baseSize, beatOffset, crackPaths, boundaryCache, accumulatedDisplacements, fadingCracks, scarFadeStartTime) {
   // Background
   context.fillStyle = 'black';
   context.fillRect(0, 0, width, height);
+
+  // Calculate scar fade progress (for smooth transition after healing)
+  const scarFadeProgress = scarFadeStartTime > 0
+    ? Math.min(1, (elapsedMs - scarFadeStartTime) / CONFIG.SCAR_FADE_DURATION_MS)
+    : 1;
+  const scarFadeAmount = 1 - scarFadeProgress; // 1 at start, 0 when fully faded
+
+  // Debug: log fade progress occasionally
+  if (scarFadeStartTime > 0 && Math.random() < 0.02) { // ~2% of frames
+    console.log(`Scar fade - progress: ${scarFadeProgress.toFixed(3)}, amount: ${scarFadeAmount.toFixed(3)}, elapsed: ${(elapsedMs - scarFadeStartTime).toFixed(0)}ms / ${CONFIG.SCAR_FADE_DURATION_MS}ms`);
+  }
 
   switch (state) {
     case STATES.BEATING: {
       const { scale, beatsElapsed } = calculateBeatScale(elapsedMs, CONFIG.BPM, CONFIG.BEAT_AMPLITUDE);
       const beatsSinceOffset = beatsElapsed - beatOffset;
       const currentHeartSize = baseSize * scale;
+      const cx = width / 2;
+      const cy = height / 2;
+      const scaleFactor = currentHeartSize / baseSize;
+
       context.fillStyle = 'rgb(255,20,60)';
-      // Use accumulated displacement if available
-      if (accumulatedDisplacements.length > 0) {
-        drawHeartWithAccumulatedDisplacement(context, width / 2, height / 2, currentHeartSize, boundaryCache, accumulatedDisplacements, baseSize);
+
+      // If we have fading cracks, render heart with combined displacement
+      if (fadingCracks.length > 0 && scarFadeAmount > 0.01) {
+        // Build combined path with accumulated + fading displacement
+        context.beginPath();
+        for (let i = 0; i < boundaryCache.length; i++) {
+          const basePoint = {
+            x: cx + boundaryCache[i].x * scaleFactor,
+            y: cy + boundaryCache[i].y * scaleFactor
+          };
+
+          const angle = Math.atan2(basePoint.y - cy, basePoint.x - cx);
+          const accumulatedDisp = accumulatedDisplacements[i] * scaleFactor;
+          const displacedPoint = {
+            x: basePoint.x + Math.cos(angle) * accumulatedDisp,
+            y: basePoint.y + Math.sin(angle) * accumulatedDisp
+          };
+
+          // Add fading crack displacement
+          let fadingDisplacement = 0;
+          fadingCracks.forEach(crack => {
+            fadingDisplacement += crack.getDisplacementAt(displacedPoint, 1.0, { x: cx, y: cy });
+          });
+          fadingDisplacement *= scarFadeAmount;
+
+          const finalX = displacedPoint.x + Math.cos(angle) * fadingDisplacement;
+          const finalY = displacedPoint.y + Math.sin(angle) * fadingDisplacement;
+
+          if (i === 0) context.moveTo(finalX, finalY);
+          else context.lineTo(finalX, finalY);
+        }
+        context.closePath();
+        context.fill();
+
+        // Now draw the fading healing scars on top, scaled with the heart
+        context.save();
+        // Clip to the displaced heart shape
+        context.beginPath();
+        for (let i = 0; i < boundaryCache.length; i++) {
+          const basePoint = {
+            x: cx + boundaryCache[i].x * scaleFactor,
+            y: cy + boundaryCache[i].y * scaleFactor
+          };
+
+          const angle = Math.atan2(basePoint.y - cy, basePoint.x - cx);
+          const accumulatedDisp = accumulatedDisplacements[i] * scaleFactor;
+          const displacedPoint = {
+            x: basePoint.x + Math.cos(angle) * accumulatedDisp,
+            y: basePoint.y + Math.sin(angle) * accumulatedDisp
+          };
+
+          let fadingDisplacement = 0;
+          fadingCracks.forEach(crack => {
+            fadingDisplacement += crack.getDisplacementAt(displacedPoint, 1.0, { x: cx, y: cy });
+          });
+          fadingDisplacement *= scarFadeAmount;
+
+          const finalX = displacedPoint.x + Math.cos(angle) * fadingDisplacement;
+          const finalY = displacedPoint.y + Math.sin(angle) * fadingDisplacement;
+
+          if (i === 0) context.moveTo(finalX, finalY);
+          else context.lineTo(finalX, finalY);
+        }
+        context.closePath();
+        context.clip();
+
+        // Apply scaling transform so cracks scale with the heart
+        context.translate(cx, cy);
+        context.scale(scaleFactor, scaleFactor);
+        context.translate(-cx, -cy);
+
+        // Draw fading healing material
+        const healingAlpha = scarFadeAmount * 0.8; // fade opacity
+        context.globalAlpha = healingAlpha;
+
+        fadingCracks.forEach(crack => {
+          crack.drawHealing(context, 1.0); // fully healed
+        });
+
+        context.restore();
       } else {
-        drawHeart(context, width / 2, height / 2, currentHeartSize);
+        // Normal rendering without fading
+        context.fillStyle = 'rgb(255,20,60)';
+        if (accumulatedDisplacements.length > 0) {
+          drawHeartWithAccumulatedDisplacement(context, cx, cy, currentHeartSize, boundaryCache, accumulatedDisplacements, baseSize);
+        } else {
+          drawHeart(context, cx, cy, currentHeartSize);
+        }
       }
+
       break;
     }
     case STATES.HALTING: {
@@ -459,19 +559,19 @@ function sampleDisplacedBoundary(cx, cy, boundaryCache, accumulatedDisplacements
   if (!boundaryCache || accumulatedDisplacements.length === 0) {
     return null;
   }
-  
+
   const pts = [];
   for (let i = 0; i < boundaryCache.length; i++) {
     const basePoint = {
       x: cx + boundaryCache[i].x,
       y: cy + boundaryCache[i].y
     };
-    
+
     const angle = Math.atan2(basePoint.y - cy, basePoint.x - cx);
     const displacement = accumulatedDisplacements[i];
     const x = basePoint.x + Math.cos(angle) * displacement;
     const y = basePoint.y + Math.sin(angle) * displacement;
-    
+
     pts.push({ x, y });
   }
   return pts;
@@ -490,7 +590,11 @@ const sketch = ({ width, height }) => {
   let crackPaths = [];    // active cracks during CRACKING state
   let boundaryCache = null; // heart boundary points (center-relative)
   let accumulatedDisplacements = []; // displacement per boundary point (persists across cycles)
-  
+
+  // Scar fade tracking (for smooth transition after healing)
+  let fadingCracks = [];  // cracks from previous cycle that are fading out
+  let scarFadeStartTime = 0; // when the scar fade started
+
   // Cycle tracking
   let smallCycleCount = 0; // How many small cycles completed (0 to MAX_SMALL_CYCLES)
 
@@ -507,18 +611,18 @@ const sketch = ({ width, height }) => {
       console.log(`State transition: ${currentState} -> ${stateUpdate.state}`);
       currentState = stateUpdate.state;
       stateStartTime = stateUpdate.stateStartTime;
-      
+
       // Reset beat offset when requested (HEALING->BEATING or COMPLETE->BEATING)
       if (stateUpdate.resetBeatOffset) {
         beatOffset = Math.floor(beatsElapsed);
         console.log(`Reset beatOffset to ${beatOffset}`);
       }
-      
+
       if (typeof stateUpdate.setBeatOffsetTo === 'number') {
         // Align beatOffset to the exact beat boundary we transitioned on
         beatOffset = stateUpdate.setBeatOffsetTo;
       }
-      
+
       // Handle big cycle reset (after COMPLETE state)
       if (stateUpdate.resetBigCycle) {
         console.log('Big cycle complete - resetting to symmetric heart');
@@ -526,28 +630,28 @@ const sketch = ({ width, height }) => {
         accumulatedDisplacements = [];
         boundaryCache = null;
       }
-      
+
       if (currentState === STATES.CRACKING) {
         // Generate cracks
         crackPaths = [];
         const centerX = width / 2;
         const centerY = height / 2;
-        
+
         // Build boundary cache if not existing (scaled to baseSize)
         if (!boundaryCache) {
           boundaryCache = sampleHeartBoundary(baseSize, 360);
           accumulatedDisplacements = new Array(boundaryCache.length).fill(0);
         }
-        
+
         // Get the actual boundary to sample from (displaced if we have accumulated displacement)
         const hasDisplacement = accumulatedDisplacements.length > 0 && accumulatedDisplacements.some(d => d !== 0);
-        console.log(`Generating cracks - hasDisplacement: ${hasDisplacement}, accumulatedDisplacements samples:`, 
+        console.log(`Generating cracks - hasDisplacement: ${hasDisplacement}, accumulatedDisplacements samples:`,
           accumulatedDisplacements.length > 0 ? accumulatedDisplacements.slice(0, 5) : 'empty');
-        
+
         const actualBoundary = hasDisplacement
           ? sampleDisplacedBoundary(centerX, centerY, boundaryCache, accumulatedDisplacements)
           : boundaryCache.map(pt => ({ x: centerX + pt.x, y: centerY + pt.y }));
-        
+
         for (let i = 0; i < CONFIG.CRACK_COUNT; i++) {
           // Pick two sufficiently separated boundary indices
           const idxA = Math.floor(random.range(0, actualBoundary.length));
@@ -569,7 +673,11 @@ const sketch = ({ width, height }) => {
         // Just transitioned from HEALING to BEATING - accumulate displacement
         smallCycleCount++;
         console.log(`Small cycle ${smallCycleCount}/${CONFIG.MAX_SMALL_CYCLES} completed`);
-        
+
+        // Store cracks for fading
+        fadingCracks = crackPaths.slice(); // copy array
+        scarFadeStartTime = elapsedMs;
+
         const centerX = width / 2;
         const centerY = height / 2;
         for (let i = 0; i < boundaryCache.length; i++) {
@@ -585,7 +693,7 @@ const sketch = ({ width, height }) => {
         }
         console.log(`Accumulated displacements - samples:`, accumulatedDisplacements.slice(0, 5));
         crackPaths = []; // Clear cracks after accumulation
-        
+
         // Check if we've completed all small cycles - if so, override transition to COMPLETE
         if (stateUpdate.checkCycleComplete && smallCycleCount >= CONFIG.MAX_SMALL_CYCLES) {
           console.log('All small cycles complete - transitioning to COMPLETE state');
@@ -593,15 +701,24 @@ const sketch = ({ width, height }) => {
           stateStartTime = elapsedMs;
         }
       }
-      
+
       // Keep cracks during HEALING so they can fade out
       if (currentState !== STATES.CRACKING && currentState !== STATES.HEALING && crackPaths.length > 0) {
         crackPaths = [];
       }
     }
 
+    // Clear fading cracks after they've fully faded
+    if (fadingCracks.length > 0 && scarFadeStartTime > 0) {
+      const fadeProgress = Math.min(1, (elapsedMs - scarFadeStartTime) / CONFIG.SCAR_FADE_DURATION_MS);
+      if (fadeProgress >= 1) {
+        fadingCracks = [];
+        scarFadeStartTime = 0;
+      }
+    }
+
     // Render current state
-    renderState(context, width, height, currentState, elapsedMs, stateStartTime, baseSize, beatOffset, crackPaths, boundaryCache, accumulatedDisplacements);
+    renderState(context, width, height, currentState, elapsedMs, stateStartTime, baseSize, beatOffset, crackPaths, boundaryCache, accumulatedDisplacements, fadingCracks, scarFadeStartTime);
   };
 };
 
