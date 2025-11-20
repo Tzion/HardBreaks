@@ -33,7 +33,7 @@ function generateConfig() {
     HEALING_DURATION_MS: random.rangeFloor(1000, 14000), // duration of healing (crack fade-out)
     MAX_SMALL_CYCLES: random.rangeFloor(2, 6),       // number of small cycles before big cycle reset
     SCAR_FADE_DURATION_MS: random.rangeFloor(3000, 8000), // time to fade out previous cycle's displacement/color
-    BASE_SIZE_FACTOR: random.range(0.1, 0.4),   // base heart size as fraction of canvas
+    BASE_SIZE_FACTOR: random.range(0.1, 0.47),   // base heart size as fraction of canvas
     CRACK_LINE_WIDTH_FACTOR: random.range(0.03, 0.18), // crack thickness
     COMPLETE_DURATION_MS: 4321, // pause duration at completion before reset
   };
@@ -77,42 +77,12 @@ function generateHeartColor() {
 }
 
 function generateCrackColor(heartColor) {
-  // Generate contrasting crack color based on heart color
-  const brightness = (heartColor.r + heartColor.g + heartColor.b) / 3;
-
-  if (brightness > 150) {
-    // Heart is bright - use contrasting cracks (dark or vibrant)
-    if (random.value() < 0.6) {
-      // 60% chance: Dark cracks
-      return {
-        r: random.rangeFloor(0, 40),
-        g: random.rangeFloor(0, 40),
-        b: random.rangeFloor(0, 60)
-      };
-    } else {
-      // 40% chance: Vibrant contrasting cracks (reds, cyans, magentas, etc.)
-      const vibrantOptions = [
-        () => ({ r: random.rangeFloor(180, 255), g: random.rangeFloor(0, 40), b: random.rangeFloor(0, 60) }), // red
-        () => ({ r: random.rangeFloor(0, 60), g: random.rangeFloor(180, 255), b: random.rangeFloor(180, 255) }), // cyan
-        () => ({ r: random.rangeFloor(180, 255), g: random.rangeFloor(0, 60), b: random.rangeFloor(180, 255) }), // magenta
-        () => ({ r: random.rangeFloor(180, 255), g: random.rangeFloor(140, 200), b: random.rangeFloor(0, 60) }), // orange
-      ];
-      return random.pick(vibrantOptions)();
-    }
-  } else {
-    // Heart is dark - use bright/complementary cracks
-    const complementaryHue = [
-      255 - heartColor.r + random.rangeFloor(-30, 30),
-      255 - heartColor.g + random.rangeFloor(-30, 30),
-      255 - heartColor.b + random.rangeFloor(-30, 30)
-    ];
-
-    return {
-      r: Math.max(180, Math.min(255, complementaryHue[0])),
-      g: Math.max(180, Math.min(255, complementaryHue[1])),
-      b: Math.max(180, Math.min(255, complementaryHue[2]))
-    };
-  }
+  // Always return black for cracks
+  return {
+    r: 0,
+    g: 0,
+    b: 0
+  };
 }
 
 function colorToRgbString(color) {
