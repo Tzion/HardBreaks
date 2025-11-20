@@ -100,7 +100,7 @@ void setup()
   // Group 6: 7 strips on pin 8
   FastLED.addLeds<LED_TYPE, STRIP_7, COLOR_ORDER>(leds, offset, NUM_LEDS_GROUP_6);
 
-  FastLED.setBrightness(50);
+  FastLED.setBrightness(40);
   FastLED.clear();
   FastLED.show();
 }

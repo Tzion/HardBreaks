@@ -282,35 +282,36 @@ function calculateBeatScale(elapsedMs, bpm, amplitude = 0.25) {
   const beatsPerSecond = bpm / 60;
   const beatsElapsed = (elapsedMs / 1000) * beatsPerSecond;
   const beatPhase = beatsElapsed % 1; // 0..1 within current beat
-  
-  // Two-pulse heartbeat pattern (lub-dub)
-  // First pulse (lub) at ~60% through cycle
-  // Second pulse (dub) at ~80% through cycle, slightly larger
+
+  // Very gentle two-pulse heartbeat pattern (lub-dub)
+  // Extra smooth for LED display
   let pulse = 0;
-  
-  if (beatPhase < 0.55) {
+
+  if (beatPhase < 0.45) {
     // Resting phase before first pulse
     pulse = 0;
+  } else if (beatPhase < 0.67) {
+    // First pulse (lub) - very gentle rise and fall
+    const lubPhase = (beatPhase - 0.45) / 0.22; // 0 to 1 over 22% of beat
+    // Double smoothstep for extra gentleness: 6t⁵ - 15t⁴ + 10t³
+    const smoothLub = lubPhase * lubPhase * lubPhase * (lubPhase * (lubPhase * 6 - 15) + 10);
+    pulse = Math.sin(smoothLub * Math.PI) * 0.5; // 50% of full amplitude
   } else if (beatPhase < 0.7) {
-    // First pulse (lub) - quick rise and fall
-    const lubPhase = (beatPhase - 0.55) / 0.15; // 0 to 1 over 15% of beat
-    pulse = Math.sin(lubPhase * Math.PI) * 0.85; // 85% of full amplitude
-  } else if (beatPhase < 0.75) {
     // Brief pause between pulses
     pulse = 0;
-  } else if (beatPhase < 0.92) {
-    // Second pulse (dub) - slightly larger and longer
-    const dubPhase = (beatPhase - 0.75) / 0.17; // 0 to 1 over 17% of beat
-    pulse = Math.sin(dubPhase * Math.PI) * 1.0; // 100% of full amplitude
+  } else if (beatPhase < 0.94) {
+    // Second pulse (dub) - slightly larger but still very gentle
+    const dubPhase = (beatPhase - 0.7) / 0.24; // 0 to 1 over 24% of beat
+    // Double smoothstep for extra gentleness
+    const smoothDub = dubPhase * dubPhase * dubPhase * (dubPhase * (dubPhase * 6 - 15) + 10);
+    pulse = Math.sin(smoothDub * Math.PI) * 0.65; // 65% of full amplitude
   } else {
     // Resting phase after second pulse
     pulse = 0;
   }
-  
-  return { scale: 1 + amplitude * pulse, beatsElapsed, beatPhase };
-}
 
-/**
+  return { scale: 1 + amplitude * pulse, beatsElapsed, beatPhase };
+}/**
  * Update state logic - determines transitions between states
  */
 function updateState(state, stateStartTime, elapsedMs, beatsSinceOffset, beatPhase, beatsElapsed, timeInState) {
