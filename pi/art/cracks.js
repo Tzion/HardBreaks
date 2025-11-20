@@ -48,4 +48,61 @@ export class Crack {
     }
     context.stroke();
   }
+
+  // Draw healing material growing along crack path
+  drawHealing(context, healProgress) {
+    if (healProgress <= 0) return;
+
+    const crackWidth = this.baseSize * this.CONFIG.CRACK_LINE_WIDTH_FACTOR;
+    const maxHealWidth = crackWidth * 2.5; // 2.5x crack width at full expansion
+
+    // Calculate healing width based on progress
+    // 0-0.5: grow from 1px to crack width (filling phase)
+    // 0.5-1: grow from crack width to max (expansion/pushing phase)
+    let width;
+    if (healProgress < 0.5) {
+      width = 1 + (crackWidth - 1) * (healProgress / 0.5);
+    } else {
+      const extraProgress = (healProgress - 0.5) / 0.5;
+      width = crackWidth + (maxHealWidth - crackWidth) * extraProgress;
+    }
+
+    context.save();
+    context.strokeStyle = 'rgb(255, 220, 100)'; // yellow healing material
+    context.lineWidth = width;
+    context.lineCap = 'round';
+    context.lineJoin = 'round';
+
+    context.beginPath();
+    context.moveTo(this.points[0].x, this.points[0].y);
+    for (let i = 1; i < this.points.length; i++) {
+      context.lineTo(this.points[i].x, this.points[i].y);
+    }
+    context.stroke();
+    context.restore();
+  }
+
+  // Calculate displacement for boundary points near crack endpoints
+  getDisplacementAt(point, healProgress, center) {
+    if (healProgress <= 0.5) return 0; // No displacement until crack is filled
+
+    const extraProgress = (healProgress - 0.5) / 0.5; // 0 to 1 for expansion phase
+
+    // Check distance to crack endpoints
+    const distToStart = Math.hypot(point.x - this.start.x, point.y - this.start.y);
+    const distToEnd = Math.hypot(point.x - this.end.x, point.y - this.end.y);
+    const minDist = Math.min(distToStart, distToEnd);
+
+    // Displacement parameters
+    const crackWidth = this.baseSize * this.CONFIG.CRACK_LINE_WIDTH_FACTOR;
+    const maxDisplacement = crackWidth * 1.5;
+    const influenceRadius = this.baseSize * 0.4; // influence zone around endpoints
+
+    if (minDist < influenceRadius) {
+      const falloff = 1 - (minDist / influenceRadius);
+      return maxDisplacement * falloff * extraProgress;
+    }
+
+    return 0;
+  }
 }

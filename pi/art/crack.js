@@ -1,3 +1,4 @@
+// Deprecated - new version `cracks.js`
 // TO RUN: canvas-sketch crack_demo.js --open
 import canvasSketch from 'canvas-sketch';
 import random from 'canvas-sketch-util/random.js';
