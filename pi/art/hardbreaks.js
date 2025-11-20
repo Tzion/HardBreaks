@@ -43,15 +43,17 @@ const sketch = ({ width, height }) => {
         context.fillStyle = 'black';
         context.fillRect(0, 0, width, height);
 
-        // Calculate beat scale using elapsed time
-        const scale = calculateBeatScale(elapsedMs, BPM);
+        // Calculate beat scale - multiply by base size instead of using context.scale()
+        // This way only the heart size changes, not the entire coordinate space
+        const beatScale = calculateBeatScale(elapsedMs, BPM);
+        const currentHeartSize = baseSize * beatScale;
 
-        context.save();
-        context.translate(width / 2, height / 2);
-        context.scale(scale, scale);
+        // Draw heart at center with dynamic size
         context.fillStyle = 'rgb(255,20,60)';
-        drawHeart(context, 0, 0, baseSize);
-        context.restore();
+        drawHeart(context, width / 2, height / 2, currentHeartSize);
+        
+        // Future: draw cracks, scars, etc. here at their original positions
+        // They won't be affected by the heart's beat scaling
     };
 };
 
