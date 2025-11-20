@@ -2,6 +2,14 @@
 // TO RUN (browser dev): canvas-sketch hardbreaks.js --open
 import canvasSketch from 'canvas-sketch';
 
+// State machine states
+const STATES = {
+    BEATING: 'BEATING',
+    HALTING: 'HALTING',
+    CRACKING: 'CRACKING',
+    HEALING: 'HEALING'
+};
+
 function drawHeart(context, cx, cy, size) {
     context.beginPath();
     for (let t = 0; t < Math.PI * 2; t += 0.08) {
@@ -30,30 +38,102 @@ function calculateBeatScale(elapsedMs, bpm, amplitude = 0.25) {
     return 1 + amplitude * pulse;
 }
 
+/**
+ * Update state logic - determines transitions between states
+ */
+function updateState(state, stateStartTime, elapsedMs) {
+    const timeInState = elapsedMs - stateStartTime;
+
+    switch (state) {
+        case STATES.BEATING:
+            // TODO: After N beats, transition to HALTING
+            // For now, stay in BEATING forever
+            return { state: STATES.BEATING, stateStartTime };
+
+        case STATES.HALTING:
+            // TODO: After halt duration, transition to CRACKING
+            return { state: STATES.HALTING, stateStartTime };
+
+        case STATES.CRACKING:
+            // TODO: After cracks complete, transition to HEALING
+            return { state: STATES.CRACKING, stateStartTime };
+
+        case STATES.HEALING:
+            // TODO: After healing complete, transition to BEATING (next cycle)
+            return { state: STATES.HEALING, stateStartTime };
+
+        default:
+            return { state: STATES.BEATING, stateStartTime: elapsedMs };
+    }
+}
+
+/**
+ * Render based on current state
+ */
+function renderState(context, width, height, state, elapsedMs, stateStartTime, baseSize) {
+    const timeInState = elapsedMs - stateStartTime;
+
+    // Background
+    context.fillStyle = 'black';
+    context.fillRect(0, 0, width, height);
+
+    switch (state) {
+        case STATES.BEATING: {
+            // Beating heart with pulse
+            const beatScale = calculateBeatScale(elapsedMs, 50); // BPM=50
+            const currentHeartSize = baseSize * beatScale;
+            context.fillStyle = 'rgb(255,20,60)';
+            drawHeart(context, width / 2, height / 2, currentHeartSize);
+            break;
+        }
+
+        case STATES.HALTING: {
+            // TODO: Static heart (no pulse), maybe slight shake
+            context.fillStyle = 'rgb(255,20,60)';
+            drawHeart(context, width / 2, height / 2, baseSize);
+            break;
+        }
+
+        case STATES.CRACKING: {
+            // TODO: Static heart + growing cracks
+            context.fillStyle = 'rgb(255,20,60)';
+            drawHeart(context, width / 2, height / 2, baseSize);
+            // TODO: draw cracks
+            break;
+        }
+
+        case STATES.HEALING: {
+            // TODO: Static heart + healing cracks (fade/glow)
+            context.fillStyle = 'rgb(255,20,60)';
+            drawHeart(context, width / 2, height / 2, baseSize);
+            // TODO: draw healing effects
+            break;
+        }
+    }
+}
+
 const sketch = ({ width, height }) => {
-    const BPM = 50;
-    const baseSizeFactor = 0.25; // fraction of min dimension
+    const baseSizeFactor = 0.25;
     const startTime = Date.now();
+
+    // State machine variables
+    let currentState = STATES.BEATING;
+    let stateStartTime = 0; // Time when current state began (relative to startTime)
 
     return ({ context, width, height }) => {
         const baseSize = Math.min(width, height) * baseSizeFactor;
         const elapsedMs = Date.now() - startTime;
 
-        // Background
-        context.fillStyle = 'black';
-        context.fillRect(0, 0, width, height);
+        // Update state transitions
+        const stateUpdate = updateState(currentState, stateStartTime, elapsedMs);
+        if (stateUpdate.state !== currentState) {
+            console.log(`State transition: ${currentState} -> ${stateUpdate.state}`);
+            currentState = stateUpdate.state;
+            stateStartTime = stateUpdate.stateStartTime;
+        }
 
-        // Calculate beat scale - multiply by base size instead of using context.scale()
-        // This way only the heart size changes, not the entire coordinate space
-        const beatScale = calculateBeatScale(elapsedMs, BPM);
-        const currentHeartSize = baseSize * beatScale;
-
-        // Draw heart at center with dynamic size
-        context.fillStyle = 'rgb(255,20,60)';
-        drawHeart(context, width / 2, height / 2, currentHeartSize);
-        
-        // Future: draw cracks, scars, etc. here at their original positions
-        // They won't be affected by the heart's beat scaling
+        // Render current state
+        renderState(context, width, height, currentState, elapsedMs, stateStartTime, baseSize);
     };
 };
 
