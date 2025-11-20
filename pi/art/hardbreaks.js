@@ -19,7 +19,7 @@ const CONFIG = {
     HALT_DURATION_MS: 1500,   // how long to stay halted (ms)
     BEAT_AMPLITUDE: 0.25,     // 25% enlargement at peak
     CRACK_COUNT: 2,           // number of cracks to generate
-    CRACK_DURATION_MS: 18000,  // duration of crack growth animation
+    CRACK_DURATION_MS: 2800,  // duration of crack growth animation
     CRACK_STEPS_MIN: 12,
     CRACK_STEPS_MAX: 28,
     CRACK_NOISE_FREQ_MIN: 30,
@@ -27,7 +27,8 @@ const CONFIG = {
     CRACK_NOISE_AMP_MIN: 8,
     CRACK_NOISE_AMP_MAX: 45,
     CRACK_LINE_WIDTH_FACTOR: 0.1, // wider cracks
-    CRACK_COLOR: 'rgba(0,0,0,0.95)' // darker fracture color
+    CRACK_COLOR: 'rgba(0,0,0,0.95)', // darker fracture color
+    HEALING_DURATION_MS: 20000 // duration of healing (crack fade-out)
 };
 
 function drawHeart(context, cx, cy, size) {
@@ -99,12 +100,16 @@ function updateState(state, stateStartTime, elapsedMs, beatsSinceOffset, beatPha
         }
         case STATES.CRACKING: {
             if (timeInState >= CONFIG.CRACK_DURATION_MS) {
-                // Placeholder: after cracking go back to BEATING (healing later)
-                return { state: STATES.BEATING, stateStartTime: elapsedMs };
+                // Transition to healing after cracks finish growing
+                return { state: STATES.HEALING, stateStartTime: elapsedMs };
             }
             return { state: STATES.CRACKING, stateStartTime };
         }
         case STATES.HEALING: {
+            if (timeInState >= CONFIG.HEALING_DURATION_MS) {
+                // After healing completes, return to BEATING for next cycle
+                return { state: STATES.BEATING, stateStartTime: elapsedMs };
+            }
             return { state: STATES.HEALING, stateStartTime };
         }
         default:
@@ -152,8 +157,28 @@ function renderState(context, width, height, state, elapsedMs, stateStartTime, b
             break;
         }
         case STATES.HEALING: {
+            // Draw heart with fading cracks
+            buildHeartPath(context, width / 2, height / 2, baseSize);
             context.fillStyle = 'rgb(255,20,60)';
-            drawHeart(context, width / 2, height / 2, baseSize);
+            context.fill();
+            
+            // Fade out cracks during healing
+            const timeInState = elapsedMs - stateStartTime;
+            const healProgress = Math.min(1, timeInState / CONFIG.HEALING_DURATION_MS);
+            const crackAlpha = 1 - healProgress; // fade from 1 to 0
+            
+            if (crackAlpha > 0.01 && crackPaths.length > 0) {
+                context.save();
+                buildHeartPath(context, width / 2, height / 2, baseSize);
+                context.clip();
+                // Parse existing color and apply fade
+                const baseColor = CONFIG.CRACK_COLOR.match(/rgba?\(([^)]+)\)/)?.[1] || '0,0,0,0.95';
+                const [r, g, b] = baseColor.split(',').map(v => parseFloat(v.trim()));
+                context.strokeStyle = `rgba(${r},${g},${b},${crackAlpha * 0.95})`;
+                context.lineWidth = Math.max(1, baseSize * CONFIG.CRACK_LINE_WIDTH_FACTOR);
+                crackPaths.forEach(c => c.draw(context, 1.0)); // fully grown cracks, just fading
+                context.restore();
+            }
             break;
         }
     }
@@ -222,7 +247,8 @@ const sketch = ({ width, height }) => {
                     crackPaths.push(new Crack(start, end, baseSize, CONFIG));
                 }
             }
-            if (currentState !== STATES.CRACKING) {
+            // Keep cracks during HEALING so they can fade out
+            if (currentState !== STATES.CRACKING && currentState !== STATES.HEALING) {
                 crackPaths = [];
             }
         }
