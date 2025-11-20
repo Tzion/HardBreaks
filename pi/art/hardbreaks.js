@@ -47,17 +47,31 @@ let CONFIG = generateConfig();
 
 // Color palette generation
 function generateHeartColor() {
-  // Generate vibrant heart colors - reds, pinks, oranges, purples
+  // Generate vibrant heart colors with more variety
   const colorPalettes = [
-    // Classic reds and pinks
+    // Classic reds
     () => ({ r: random.rangeFloor(200, 255), g: random.rangeFloor(10, 40), b: random.rangeFloor(40, 80) }),
+    () => ({ r: random.rangeFloor(180, 230), g: random.rangeFloor(20, 50), b: random.rangeFloor(20, 60) }),
+    // Pinks
     () => ({ r: random.rangeFloor(220, 255), g: random.rangeFloor(60, 120), b: random.rangeFloor(120, 180) }),
+    () => ({ r: random.rangeFloor(255, 255), g: random.rangeFloor(100, 150), b: random.rangeFloor(150, 200) }),
     // Oranges
     () => ({ r: random.rangeFloor(230, 255), g: random.rangeFloor(80, 150), b: random.rangeFloor(0, 60) }),
+    () => ({ r: random.rangeFloor(255, 255), g: random.rangeFloor(120, 180), b: random.rangeFloor(30, 80) }),
     // Deep purples
     () => ({ r: random.rangeFloor(120, 180), g: random.rangeFloor(20, 60), b: random.rangeFloor(140, 200) }),
+    () => ({ r: random.rangeFloor(100, 150), g: random.rangeFloor(30, 70), b: random.rangeFloor(160, 220) }),
     // Magentas
     () => ({ r: random.rangeFloor(200, 255), g: random.rangeFloor(0, 80), b: random.rangeFloor(150, 220) }),
+    () => ({ r: random.rangeFloor(220, 255), g: random.rangeFloor(20, 60), b: random.rangeFloor(180, 240) }),
+    // Coral/Salmon
+    () => ({ r: random.rangeFloor(240, 255), g: random.rangeFloor(100, 140), b: random.rangeFloor(100, 130) }),
+    // Hot pink
+    () => ({ r: random.rangeFloor(240, 255), g: random.rangeFloor(40, 90), b: random.rangeFloor(140, 180) }),
+    // Crimson
+    () => ({ r: random.rangeFloor(180, 220), g: random.rangeFloor(10, 30), b: random.rangeFloor(50, 90) }),
+    // Violet
+    () => ({ r: random.rangeFloor(140, 190), g: random.rangeFloor(60, 100), b: random.rangeFloor(180, 230) }),
   ];
 
   const palette = random.pick(colorPalettes);
@@ -69,15 +83,26 @@ function generateCrackColor(heartColor) {
   const brightness = (heartColor.r + heartColor.g + heartColor.b) / 3;
 
   if (brightness > 150) {
-    // Heart is bright - use dark cracks
-    return {
-      r: random.rangeFloor(0, 40),
-      g: random.rangeFloor(0, 40),
-      b: random.rangeFloor(0, 60)
-    };
+    // Heart is bright - use contrasting cracks (dark or vibrant)
+    if (random.value() < 0.6) {
+      // 60% chance: Dark cracks
+      return {
+        r: random.rangeFloor(0, 40),
+        g: random.rangeFloor(0, 40),
+        b: random.rangeFloor(0, 60)
+      };
+    } else {
+      // 40% chance: Vibrant contrasting cracks (reds, cyans, magentas, etc.)
+      const vibrantOptions = [
+        () => ({ r: random.rangeFloor(180, 255), g: random.rangeFloor(0, 40), b: random.rangeFloor(0, 60) }), // red
+        () => ({ r: random.rangeFloor(0, 60), g: random.rangeFloor(180, 255), b: random.rangeFloor(180, 255) }), // cyan
+        () => ({ r: random.rangeFloor(180, 255), g: random.rangeFloor(0, 60), b: random.rangeFloor(180, 255) }), // magenta
+        () => ({ r: random.rangeFloor(180, 255), g: random.rangeFloor(140, 200), b: random.rangeFloor(0, 60) }), // orange
+      ];
+      return random.pick(vibrantOptions)();
+    }
   } else {
     // Heart is dark - use bright/complementary cracks
-    // Calculate complementary color
     const complementaryHue = [
       255 - heartColor.r + random.rangeFloor(-30, 30),
       255 - heartColor.g + random.rangeFloor(-30, 30),
