@@ -605,7 +605,7 @@ function sampleDisplacedBoundary(cx, cy, boundaryCache, accumulatedDisplacements
 // Crack class moved to ./cracks.js for reuse & testing
 
 const sketch = ({ width, height }) => {
-  const baseSizeFactor = 0.35;
+  let baseSizeFactor = 0.35;
   const startTime = Date.now();
 
   // State machine variables
@@ -654,6 +654,7 @@ const sketch = ({ width, height }) => {
         smallCycleCount = 0;
         accumulatedDisplacements = [];
         boundaryCache = null;
+        baseSizeFactor = 0.35; // Reset size to original
       }
 
       if (currentState === STATES.CRACKING) {
@@ -698,6 +699,10 @@ const sketch = ({ width, height }) => {
         // Just transitioned from HEALING to BEATING - accumulate displacement
         smallCycleCount++;
         console.log(`Small cycle ${smallCycleCount}/${CONFIG.MAX_SMALL_CYCLES} completed`);
+
+        // Increase heart size by 5% after each cycle
+        baseSizeFactor *= 1.05;
+        console.log(`Heart size increased to ${(baseSizeFactor / 0.35 * 100).toFixed(1)}% of original`);
 
         // Store cracks for fading
         fadingCracks = crackPaths.slice(); // copy array
