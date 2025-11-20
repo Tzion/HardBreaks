@@ -1,0 +1,21 @@
+# place in  /etc/systemd/system/hardbreaks.service
+[Unit]
+Description=HardBreaks LED Matrix - run animation
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/HardBreaks
+ExecStart=/usr/bin/node /home/pi/HardBreaks/pi/run.js
+
+# wait 10 seconds if crashes, then restart
+Restart=always
+RestartSec=10
+
+# Restart every 4 hours and 44 seconds even if running fine
+# RuntimeMaxSec=14444
+
+[Install]
+WantedBy=multi-user.target
+
