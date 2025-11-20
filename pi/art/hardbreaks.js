@@ -44,6 +44,69 @@ function drawHeart(context, cx, cy, size) {
   context.fill();
 }
 
+// Draw heart with displacement (for healing expansion)
+function drawHeartWithDisplacement(context, cx, cy, size, crackPaths, healProgress) {
+  context.beginPath();
+  const segments = 180;
+  
+  for (let i = 0; i <= segments; i++) {
+    const t = (i / segments) * Math.PI * 2;
+    const xt = 19 * Math.pow(Math.sin(t), 3);
+    const yt = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 3 * Math.cos(3 * t) - 1 * Math.cos(4 * t));
+    
+    // Base point on heart boundary
+    const basePoint = { x: cx + (xt * size) / 16, y: cy + (yt * size) / 16 };
+    
+    // Calculate total displacement from all cracks
+    let displacement = 0;
+    crackPaths.forEach(crack => {
+      displacement += crack.getDisplacementAt(basePoint, healProgress, { x: cx, y: cy });
+    });
+    
+    // Apply displacement radially outward from center
+    const angle = Math.atan2(basePoint.y - cy, basePoint.x - cx);
+    const x = basePoint.x + Math.cos(angle) * displacement;
+    const y = basePoint.y + Math.sin(angle) * displacement;
+    
+    if (i === 0) context.moveTo(x, y);
+    else context.lineTo(x, y);
+  }
+  
+  context.closePath();
+  context.fill();
+}
+
+// Build heart path with displacement (for clipping during healing)
+function buildHeartPathWithDisplacement(context, cx, cy, size, crackPaths, healProgress) {
+  context.beginPath();
+  const segments = 180;
+  
+  for (let i = 0; i <= segments; i++) {
+    const t = (i / segments) * Math.PI * 2;
+    const xt = 19 * Math.pow(Math.sin(t), 3);
+    const yt = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 3 * Math.cos(3 * t) - 1 * Math.cos(4 * t));
+    
+    // Base point on heart boundary
+    const basePoint = { x: cx + (xt * size) / 16, y: cy + (yt * size) / 16 };
+    
+    // Calculate total displacement from all cracks
+    let displacement = 0;
+    crackPaths.forEach(crack => {
+      displacement += crack.getDisplacementAt(basePoint, healProgress, { x: cx, y: cy });
+    });
+    
+    // Apply displacement radially outward from center
+    const angle = Math.atan2(basePoint.y - cy, basePoint.x - cx);
+    const x = basePoint.x + Math.cos(angle) * displacement;
+    const y = basePoint.y + Math.sin(angle) * displacement;
+    
+    if (i === 0) context.moveTo(x, y);
+    else context.lineTo(x, y);
+  }
+  
+  context.closePath();
+}
+
 // Build heart path (no fill) for clipping or stroke operations
 function buildHeartPath(context, cx, cy, size) {
   context.beginPath();
@@ -157,28 +220,33 @@ function renderState(context, width, height, state, elapsedMs, stateStartTime, b
       break;
     }
     case STATES.HEALING: {
-      // Draw heart with fading cracks
-      buildHeartPath(context, width / 2, height / 2, baseSize);
-      context.fillStyle = 'rgb(255,20,60)';
-      context.fill();
-
-      // Fade out cracks during healing
+      // Draw heart with displacement and healing material
       const timeInState = elapsedMs - stateStartTime;
       const healProgress = Math.min(1, timeInState / CONFIG.HEALING_DURATION_MS);
-      const crackAlpha = 1 - healProgress; // fade from 1 to 0
 
-      if (crackAlpha > 0.01 && crackPaths.length > 0) {
-        context.save();
-        buildHeartPath(context, width / 2, height / 2, baseSize);
-        context.clip();
-        // Parse existing color and apply fade
+      // Draw displaced heart
+      context.fillStyle = 'rgb(255,20,60)';
+      drawHeartWithDisplacement(context, width / 2, height / 2, baseSize, crackPaths, healProgress);
+
+      // Clip to displaced heart boundary for healing material and cracks
+      context.save();
+      buildHeartPathWithDisplacement(context, width / 2, height / 2, baseSize, crackPaths, healProgress);
+      context.clip();
+
+      // Draw healing material (yellow fill growing along cracks)
+      crackPaths.forEach(c => c.drawHealing(context, healProgress));
+
+      // Draw fading cracks on top of healing material
+      const crackAlpha = Math.max(0, 1 - healProgress * 1.5); // fade faster than heal grows
+      if (crackAlpha > 0.01) {
         const baseColor = CONFIG.CRACK_COLOR.match(/rgba?\(([^)]+)\)/)?.[1] || '0,0,0,0.95';
         const [r, g, b] = baseColor.split(',').map(v => parseFloat(v.trim()));
         context.strokeStyle = `rgba(${r},${g},${b},${crackAlpha * 0.95})`;
         context.lineWidth = Math.max(1, baseSize * CONFIG.CRACK_LINE_WIDTH_FACTOR);
-        crackPaths.forEach(c => c.draw(context, 1.0)); // fully grown cracks, just fading
-        context.restore();
+        crackPaths.forEach(c => c.draw(context, 1.0));
       }
+
+      context.restore();
       break;
     }
   }
