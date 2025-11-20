@@ -16,19 +16,21 @@ function drawHeart(context, cx, cy, size) {
     context.fill();
 }
 
-const sketch = () => {
-    const BPM = 120; // beats per minute (real-time, not tied to FPS)
+const sketch = ({ width, height }) => {
+    const BPM = 120; // beats per minute
+    const FPS = 30; // assumed frame rate for Node, browser uses settings
+    const framesPerBeat = (60 / BPM) * FPS; // frames in one complete beat
     const baseSizeFactor = 0.25; // fraction of min dimension
-    return ({ context, width, height, time }) => {
+    let frame = 0;
+    
+    return ({ context, width, height }) => {
         const baseSize = Math.min(width, height) * baseSizeFactor;
         // Background
         context.fillStyle = 'black';
         context.fillRect(0, 0, width, height);
 
-        // Time-based beat phase stays consistent regardless of actual frame rate
-        // Beats per second = BPM / 60; total beats elapsed = time * BPM / 60
-        const beatsElapsed = time * BPM / 60;
-        const beatPhase = beatsElapsed % 1; // 0..1 within current beat
+        // Frame-based beat phase (works in both browser and Node)
+        const beatPhase = (frame % framesPerBeat) / framesPerBeat; // 0..1 within current beat
         const pulse = Math.sin(beatPhase * Math.PI); // smooth in/out
         const scale = 1 + 0.25 * pulse; // enlarge up to +25%
 
@@ -38,6 +40,8 @@ const sketch = () => {
         context.fillStyle = 'rgb(255,20,60)';
         drawHeart(context, 0, 0, baseSize);
         context.restore();
+        
+        frame++;
     };
 };
 
