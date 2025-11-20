@@ -1,7 +1,8 @@
 // HardBreaks - Heart breaking and healing animation
 // TO RUN (browser dev): canvas-sketch hardbreaks.js --open
 import canvasSketch from 'canvas-sketch';
-import random from 'canvas-sketch-util/random';
+import random from 'canvas-sketch-util/random.js';
+import { Crack, pickCrackEndpoints } from './cracks.js';
 
 // State machine states
 const STATES = {
@@ -18,13 +19,15 @@ const CONFIG = {
     HALT_DURATION_MS: 1500,   // how long to stay halted (ms)
     BEAT_AMPLITUDE: 0.25,     // 25% enlargement at peak
     CRACK_COUNT: 2,           // number of cracks to generate
-    CRACK_DURATION_MS: 5800,  // duration of crack growth animation
+    CRACK_DURATION_MS: 18000,  // duration of crack growth animation
     CRACK_STEPS_MIN: 12,
     CRACK_STEPS_MAX: 28,
     CRACK_NOISE_FREQ_MIN: 30,
-    CRACK_NOISE_FREQ_MAX: 160,
+    CRACK_NOISE_FREQ_MAX: 120,
     CRACK_NOISE_AMP_MIN: 8,
-    CRACK_NOISE_AMP_MAX: 45
+    CRACK_NOISE_AMP_MAX: 45,
+    CRACK_LINE_WIDTH_FACTOR: 0.1, // wider cracks
+    CRACK_COLOR: 'rgba(0,0,0,0.95)' // darker fracture color
 };
 
 function drawHeart(context, cx, cy, size) {
@@ -142,8 +145,8 @@ function renderState(context, width, height, state, elapsedMs, stateStartTime, b
             context.clip();
             const timeInState = elapsedMs - stateStartTime;
             const progress = Math.min(1, timeInState / CONFIG.CRACK_DURATION_MS);
-            context.strokeStyle = 'rgba(240,240,240,0.85)';
-            context.lineWidth = Math.max(1, baseSize * 0.012);
+            context.strokeStyle = CONFIG.CRACK_COLOR;
+            context.lineWidth = Math.max(1, baseSize * CONFIG.CRACK_LINE_WIDTH_FACTOR);
             crackPaths.forEach(c => c.draw(context, progress));
             context.restore();
             break;
@@ -168,42 +171,7 @@ function sampleHeartBoundary(size, samples = 240) {
     return pts;
 }
 
-class Crack {
-    constructor(start, end, baseSize) {
-        this.start = start;
-        this.end = end;
-        this.baseSize = baseSize;
-        this.points = this.generatePoints();
-    }
-    generatePoints() {
-        const steps = random.rangeFloor(CONFIG.CRACK_STEPS_MIN, CONFIG.CRACK_STEPS_MAX);
-        const pts = [this.start];
-        for (let i = 1; i < steps; i++) {
-            const t = i / steps;
-            const x = this.start.x + (this.end.x - this.start.x) * t;
-            const y = this.start.y + (this.end.y - this.start.y) * t;
-            // Controlled noise scaled by baseSize (smaller so we stay inside clip)
-            const amp = random.range(CONFIG.CRACK_NOISE_AMP_MIN, CONFIG.CRACK_NOISE_AMP_MAX) * (this.baseSize / 320);
-            const freq = random.range(CONFIG.CRACK_NOISE_FREQ_MIN, CONFIG.CRACK_NOISE_FREQ_MAX);
-            const nx = random.noise2D(x, y, freq, amp);
-            const ny = random.noise2D(y, x, freq, amp);
-            pts.push({ x: x + nx, y: y + ny });
-        }
-        pts.push(this.end);
-        return pts;
-    }
-    draw(context, progress) {
-        if (progress <= 0) return;
-        const visibleCount = Math.max(2, Math.floor(this.points.length * progress));
-        context.beginPath();
-        context.moveTo(this.points[0].x, this.points[0].y);
-        for (let i = 1; i < visibleCount; i++) {
-            const p = this.points[i];
-            context.lineTo(p.x, p.y);
-        }
-        context.stroke();
-    }
-}
+// Crack class moved to ./cracks.js for reuse & testing
 
 const sketch = ({ width, height }) => {
     const baseSizeFactor = 0.25;
@@ -244,18 +212,14 @@ const sketch = ({ width, height }) => {
                     // Pick two sufficiently separated boundary indices
                     const idxA = Math.floor(random.range(0, boundaryCache.length));
                     let idxB = Math.floor(random.range(0, boundaryCache.length));
-                    const minSeparation = Math.floor(boundaryCache.length * 0.25);
+                    const minSeparation = Math.floor(boundaryCache.length * 0.5);
                     let attempts = 0;
                     while (Math.abs(idxB - idxA) < minSeparation && attempts < 20) {
                         idxB = Math.floor(random.range(0, boundaryCache.length));
                         attempts++;
                     }
-                    const pA = boundaryCache[idxA];
-                    const pB = boundaryCache[idxB];
-                    // Convert center-relative to absolute canvas coords
-                    const start = { x: centerX + pA.x, y: centerY + pA.y };
-                    const end = { x: centerX + pB.x, y: centerY + pB.y };
-                    crackPaths.push(new Crack(start, end, baseSize));
+                    const { start, end } = pickCrackEndpoints(boundaryCache, centerX, centerY, idxA, idxB);
+                    crackPaths.push(new Crack(start, end, baseSize, CONFIG));
                 }
             }
             if (currentState !== STATES.CRACKING) {
