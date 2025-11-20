@@ -46,4 +46,3 @@ const settings = {
 };
 
 runSketchAnimation(heartbreaksAnimation, settings)
-// runSketchAnimation(crackAnimation, settings)

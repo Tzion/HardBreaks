@@ -1,5 +1,4 @@
-// HardBreaks (Phase 0) - Static heart prototype
-// Minimal starter: draws a single static heart centered on the canvas.
+// HardBreaks - Heart breaking and healing animation
 // TO RUN (browser dev): canvas-sketch hardbreaks.js --open
 import canvasSketch from 'canvas-sketch';
 
@@ -16,23 +15,36 @@ function drawHeart(context, cx, cy, size) {
     context.fill();
 }
 
+/**
+ * Calculate beat scale based on elapsed time
+ * @param {number} elapsedMs - Milliseconds since animation start
+ * @param {number} bpm - Beats per minute
+ * @param {number} amplitude - How much to scale (0.25 = 25% larger at peak)
+ * @returns {number} Scale multiplier (1.0 baseline, up to 1.0 + amplitude)
+ */
+function calculateBeatScale(elapsedMs, bpm, amplitude = 0.25) {
+    const beatsPerSecond = bpm / 60;
+    const beatsElapsed = (elapsedMs / 1000) * beatsPerSecond;
+    const beatPhase = beatsElapsed % 1; // 0..1 within current beat
+    const pulse = Math.sin(beatPhase * Math.PI); // smooth in/out, peaks at 0.5
+    return 1 + amplitude * pulse;
+}
+
 const sketch = ({ width, height }) => {
-    const BPM = 120; // beats per minute
-    const FPS = 30; // assumed frame rate for Node, browser uses settings
-    const framesPerBeat = (60 / BPM) * FPS; // frames in one complete beat
+    const BPM = 50;
     const baseSizeFactor = 0.25; // fraction of min dimension
-    let frame = 0;
-    
+    const startTime = Date.now();
+
     return ({ context, width, height }) => {
         const baseSize = Math.min(width, height) * baseSizeFactor;
+        const elapsedMs = Date.now() - startTime;
+
         // Background
         context.fillStyle = 'black';
         context.fillRect(0, 0, width, height);
 
-        // Frame-based beat phase (works in both browser and Node)
-        const beatPhase = (frame % framesPerBeat) / framesPerBeat; // 0..1 within current beat
-        const pulse = Math.sin(beatPhase * Math.PI); // smooth in/out
-        const scale = 1 + 0.25 * pulse; // enlarge up to +25%
+        // Calculate beat scale using elapsed time
+        const scale = calculateBeatScale(elapsedMs, BPM);
 
         context.save();
         context.translate(width / 2, height / 2);
@@ -40,8 +52,6 @@ const sketch = ({ width, height }) => {
         context.fillStyle = 'rgb(255,20,60)';
         drawHeart(context, 0, 0, baseSize);
         context.restore();
-        
-        frame++;
     };
 };
 
@@ -50,7 +60,7 @@ if (isBrowser) {
     canvasSketch(sketch, {
         dimensions: [490, 390], // Matches LED aspect scaled for dev preview
         animate: true,
-        fps: 10
+        fps: 30
     });
 }
 
