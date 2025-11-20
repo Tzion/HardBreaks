@@ -20,7 +20,6 @@ const CONFIG = {
   HALT_DURATION_MS: 1500,   // how long to stay halted (ms)
   BEAT_AMPLITUDE: 0.25,     // 25% enlargement at peak
   BASE_SIZE_FACTOR: 0.35,   // base heart size as fraction of canvas (35%)
-  SIZE_GROWTH_PER_CYCLE: 1.05, // multiply size by this after each small cycle (5% growth)
   CRACK_COUNT: 2,           // number of cracks to generate
   CRACK_DURATION_MS: 2800,  // duration of crack growth animation
   CRACK_STEPS_MIN: 12,
@@ -730,7 +729,6 @@ const sketch = ({ width, height }) => {
         accumulatedDisplacements = [];
         boundaryCache = null;
         baseSizeFactor = CONFIG.BASE_SIZE_FACTOR; // Reset base size factor to original
-        sizeGrowthMultiplier = 1.0; // Reset size to original
 
         // Generate new random colors for next big cycle
         heartColor = generateHeartColor();
@@ -789,9 +787,6 @@ const sketch = ({ width, height }) => {
         smallCycleCount++;
         console.log(`Small cycle ${smallCycleCount}/${CONFIG.MAX_SMALL_CYCLES} completed`);
 
-        // Increase heart size after each cycle
-        sizeGrowthMultiplier *= CONFIG.SIZE_GROWTH_PER_CYCLE;
-        console.log(`Heart size increased to ${(sizeGrowthMultiplier * 100).toFixed(1)}% of original`);
 
         // Store cracks for fading
         fadingCracks = crackPaths.slice(); // copy array
