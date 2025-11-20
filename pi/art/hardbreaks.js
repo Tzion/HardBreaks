@@ -19,6 +19,8 @@ const CONFIG = {
   BEATS_BEFORE_HALTING: 4,  // number of full beats before halting
   HALT_DURATION_MS: 1500,   // how long to stay halted (ms)
   BEAT_AMPLITUDE: 0.25,     // 25% enlargement at peak
+  BASE_SIZE_FACTOR: 0.35,   // base heart size as fraction of canvas (35%)
+  SIZE_GROWTH_PER_CYCLE: 1.05, // multiply size by this after each small cycle (5% growth)
   CRACK_COUNT: 2,           // number of cracks to generate
   CRACK_DURATION_MS: 2800,  // duration of crack growth animation
   CRACK_STEPS_MIN: 12,
@@ -671,7 +673,7 @@ function sampleDisplacedBoundary(cx, cy, boundaryCache, accumulatedDisplacements
 // Crack class moved to ./cracks.js for reuse & testing
 
 const sketch = ({ width, height }) => {
-  let baseSizeFactor = 0.35;
+  let baseSizeFactor = CONFIG.BASE_SIZE_FACTOR;
   const startTime = Date.now();
 
   // State machine variables
@@ -727,7 +729,7 @@ const sketch = ({ width, height }) => {
         smallCycleCount = 0;
         accumulatedDisplacements = [];
         boundaryCache = null;
-        baseSizeFactor = 0.35; // Reset base size factor to original
+        baseSizeFactor = CONFIG.BASE_SIZE_FACTOR; // Reset base size factor to original
         sizeGrowthMultiplier = 1.0; // Reset size to original
 
         // Generate new random colors for next big cycle
@@ -787,8 +789,8 @@ const sketch = ({ width, height }) => {
         smallCycleCount++;
         console.log(`Small cycle ${smallCycleCount}/${CONFIG.MAX_SMALL_CYCLES} completed`);
 
-        // Increase heart size by 5% after each cycle
-        sizeGrowthMultiplier *= 1.04;
+        // Increase heart size after each cycle
+        sizeGrowthMultiplier *= CONFIG.SIZE_GROWTH_PER_CYCLE;
         console.log(`Heart size increased to ${(sizeGrowthMultiplier * 100).toFixed(1)}% of original`);
 
         // Store cracks for fading
