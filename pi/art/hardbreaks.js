@@ -29,13 +29,13 @@ function generateConfig() {
     CRACK_COLOR: 'rgba(0,0,0,0.95)', // darker fracture color
     BEATS_BEFORE_HALTING: random.rangeFloor(5, 20),  // number of full beats before halting
     CRACK_DURATION_MS: random.rangeFloor(1000, 14000),  // duration of crack growth animation
-    HALT_DURATION_MS: random.rangeFloor(500, 5000),   // how long to stay halted (ms)
-    HEALING_DURATION_MS: random.rangeFloor(1000, 18000), // duration of healing (crack fade-out)
+    HALT_DURATION_MS: random.rangeFloor(500, 3000),   // how long to stay halted (ms)
+    HEALING_DURATION_MS: random.rangeFloor(1000, 14000), // duration of healing (crack fade-out)
     MAX_SMALL_CYCLES: random.rangeFloor(2, 6),       // number of small cycles before big cycle reset
     SCAR_FADE_DURATION_MS: random.rangeFloor(3000, 8000), // time to fade out previous cycle's displacement/color
     BASE_SIZE_FACTOR: random.range(0.1, 0.4),   // base heart size as fraction of canvas
     CRACK_LINE_WIDTH_FACTOR: random.range(0.03, 0.18), // crack thickness
-    COMPLETE_DURATION_MS: 6543, // pause duration at completion before reset
+    COMPLETE_DURATION_MS: 4321, // pause duration at completion before reset
   };
 }
 
