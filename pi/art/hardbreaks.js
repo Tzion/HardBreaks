@@ -287,24 +287,24 @@ function calculateBeatScale(elapsedMs, bpm, amplitude = 0.25) {
   // Extra smooth for LED display
   let pulse = 0;
 
-  if (beatPhase < 0.45) {
+  if (beatPhase < 0.4) {
     // Resting phase before first pulse
     pulse = 0;
-  } else if (beatPhase < 0.67) {
+  } else if (beatPhase < 0.68) {
     // First pulse (lub) - very gentle rise and fall
-    const lubPhase = (beatPhase - 0.45) / 0.22; // 0 to 1 over 22% of beat
+    const lubPhase = (beatPhase - 0.4) / 0.28; // 0 to 1 over 28% of beat
     // Double smoothstep for extra gentleness: 6t⁵ - 15t⁴ + 10t³
     const smoothLub = lubPhase * lubPhase * lubPhase * (lubPhase * (lubPhase * 6 - 15) + 10);
-    pulse = Math.sin(smoothLub * Math.PI) * 0.5; // 50% of full amplitude
+    pulse = Math.sin(smoothLub * Math.PI) * 0.24; // 30% of full amplitude
   } else if (beatPhase < 0.7) {
     // Brief pause between pulses
     pulse = 0;
-  } else if (beatPhase < 0.94) {
+  } else if (beatPhase < 0.98) {
     // Second pulse (dub) - slightly larger but still very gentle
-    const dubPhase = (beatPhase - 0.7) / 0.24; // 0 to 1 over 24% of beat
+    const dubPhase = (beatPhase - 0.7) / 0.28; // 0 to 1 over 28% of beat
     // Double smoothstep for extra gentleness
     const smoothDub = dubPhase * dubPhase * dubPhase * (dubPhase * (dubPhase * 6 - 15) + 10);
-    pulse = Math.sin(smoothDub * Math.PI) * 0.65; // 65% of full amplitude
+    pulse = Math.sin(smoothDub * Math.PI) * 0.32; // 42% of full amplitude
   } else {
     // Resting phase after second pulse
     pulse = 0;
@@ -700,8 +700,8 @@ const sketch = ({ width, height }) => {
         smallCycleCount++;
         console.log(`Small cycle ${smallCycleCount}/${CONFIG.MAX_SMALL_CYCLES} completed`);
 
-        // Increase heart size by 5% after each cycle
-        baseSizeFactor *= 1.05;
+        // Increase heart size by X% after each cycle
+        baseSizeFactor *= 1.04;
         console.log(`Heart size increased to ${(baseSizeFactor / 0.35 * 100).toFixed(1)}% of original`);
 
         // Store cracks for fading
