@@ -35,6 +35,62 @@ const CONFIG = {
   SCAR_FADE_DURATION_MS: 3000 // time to fade out previous cycle's displacement/color
 };
 
+// Color palette generation
+function generateHeartColor() {
+  // Generate vibrant heart colors - reds, pinks, oranges, purples
+  const colorPalettes = [
+    // Classic reds and pinks
+    () => ({ r: random.rangeFloor(200, 255), g: random.rangeFloor(10, 40), b: random.rangeFloor(40, 80) }),
+    () => ({ r: random.rangeFloor(220, 255), g: random.rangeFloor(60, 120), b: random.rangeFloor(120, 180) }),
+    // Oranges
+    () => ({ r: random.rangeFloor(230, 255), g: random.rangeFloor(80, 150), b: random.rangeFloor(0, 60) }),
+    // Deep purples
+    () => ({ r: random.rangeFloor(120, 180), g: random.rangeFloor(20, 60), b: random.rangeFloor(140, 200) }),
+    // Magentas
+    () => ({ r: random.rangeFloor(200, 255), g: random.rangeFloor(0, 80), b: random.rangeFloor(150, 220) }),
+  ];
+
+  const palette = random.pick(colorPalettes);
+  return palette();
+}
+
+function generateCrackColor(heartColor) {
+  // Generate contrasting crack color based on heart color
+  const brightness = (heartColor.r + heartColor.g + heartColor.b) / 3;
+
+  if (brightness > 150) {
+    // Heart is bright - use dark cracks
+    return {
+      r: random.rangeFloor(0, 40),
+      g: random.rangeFloor(0, 40),
+      b: random.rangeFloor(0, 60)
+    };
+  } else {
+    // Heart is dark - use bright/complementary cracks
+    // Calculate complementary color
+    const complementaryHue = [
+      255 - heartColor.r + random.rangeFloor(-30, 30),
+      255 - heartColor.g + random.rangeFloor(-30, 30),
+      255 - heartColor.b + random.rangeFloor(-30, 30)
+    ];
+
+    return {
+      r: Math.max(180, Math.min(255, complementaryHue[0])),
+      g: Math.max(180, Math.min(255, complementaryHue[1])),
+      b: Math.max(180, Math.min(255, complementaryHue[2]))
+    };
+  }
+}
+
+function colorToRgbString(color) {
+  return `rgb(${Math.round(color.r)}, ${Math.round(color.g)}, ${Math.round(color.b)})`;
+}
+
+function colorToRgbaString(color, alpha) {
+  return `rgba(${Math.round(color.r)}, ${Math.round(color.g)}, ${Math.round(color.b)}, ${alpha})`;
+}
+
+
 function drawHeart(context, cx, cy, size) {
   context.beginPath();
   for (let t = 0; t < Math.PI * 2; t += 0.08) {
@@ -363,7 +419,7 @@ function updateState(state, stateStartTime, elapsedMs, beatsSinceOffset, beatPha
 /**
  * Render based on current state
  */
-function renderState(context, width, height, state, elapsedMs, stateStartTime, baseSize, beatOffset, crackPaths, boundaryCache, accumulatedDisplacements, fadingCracks, scarFadeStartTime) {
+function renderState(context, width, height, state, elapsedMs, stateStartTime, baseSize, beatOffset, crackPaths, boundaryCache, accumulatedDisplacements, fadingCracks, scarFadeStartTime, heartColorString, crackColorString) {
   // Background
   context.fillStyle = 'black';
   context.fillRect(0, 0, width, height);
@@ -388,7 +444,7 @@ function renderState(context, width, height, state, elapsedMs, stateStartTime, b
       const cy = height / 2;
       const scaleFactor = currentHeartSize / baseSize;
 
-      context.fillStyle = 'rgb(255,20,60)';
+      context.fillStyle = heartColorString;
 
       // If we have fading cracks, render heart with combined displacement
       if (fadingCracks.length > 0 && scarFadeAmount > 0.01) {
@@ -471,7 +527,7 @@ function renderState(context, width, height, state, elapsedMs, stateStartTime, b
         context.restore();
       } else {
         // Normal rendering without fading
-        context.fillStyle = 'rgb(255,20,60)';
+        context.fillStyle = heartColorString;
         if (accumulatedDisplacements.length > 0) {
           drawHeartWithAccumulatedDisplacement(context, cx, cy, currentHeartSize, boundaryCache, accumulatedDisplacements, baseSize);
         } else {
@@ -483,7 +539,7 @@ function renderState(context, width, height, state, elapsedMs, stateStartTime, b
     }
     case STATES.HALTING: {
       // Static heart (no pulse). Apply accumulated displacements.
-      context.fillStyle = 'rgb(255,20,60)';
+      context.fillStyle = heartColorString;
       if (accumulatedDisplacements.length > 0) {
         drawHeartWithAccumulatedDisplacement(context, width / 2, height / 2, baseSize, boundaryCache, accumulatedDisplacements, baseSize);
       } else {
@@ -493,7 +549,7 @@ function renderState(context, width, height, state, elapsedMs, stateStartTime, b
     }
     case STATES.CRACKING: {
       // Fill heart then clip cracks to heart interior so they never extend outside
-      context.fillStyle = 'rgb(255,20,60)';
+      context.fillStyle = heartColorString;
       if (accumulatedDisplacements.length > 0) {
         drawHeartWithAccumulatedDisplacement(context, width / 2, height / 2, baseSize, boundaryCache, accumulatedDisplacements, baseSize);
       } else {
@@ -510,7 +566,7 @@ function renderState(context, width, height, state, elapsedMs, stateStartTime, b
       context.clip();
       const timeInState = elapsedMs - stateStartTime;
       const progress = Math.min(1, timeInState / CONFIG.CRACK_DURATION_MS);
-      context.strokeStyle = CONFIG.CRACK_COLOR;
+      context.strokeStyle = crackColorString;
       context.lineWidth = Math.max(1, baseSize * CONFIG.CRACK_LINE_WIDTH_FACTOR);
       crackPaths.forEach(c => c.draw(context, progress));
       context.restore();
@@ -522,7 +578,7 @@ function renderState(context, width, height, state, elapsedMs, stateStartTime, b
       const healProgress = Math.min(1, timeInState / CONFIG.HEALING_DURATION_MS);
 
       // Draw displaced heart (combining accumulated + current displacement)
-      context.fillStyle = 'rgb(255,20,60)';
+      context.fillStyle = heartColorString;
       if (accumulatedDisplacements.length > 0) {
         drawHeartWithCombinedDisplacement(context, width / 2, height / 2, baseSize, crackPaths, healProgress, boundaryCache, accumulatedDisplacements, baseSize);
       } else {
@@ -544,7 +600,7 @@ function renderState(context, width, height, state, elapsedMs, stateStartTime, b
       // Draw fading cracks on top of healing material
       const crackAlpha = Math.max(0, 1 - healProgress * 1.5); // fade faster than heal grows
       if (crackAlpha > 0.01) {
-        const baseColor = CONFIG.CRACK_COLOR.match(/rgba?\(([^)]+)\)/)?.[1] || '0,0,0,0.95';
+        const baseColor = crackColorString.match(/rgba?\(([^)]+)\)/)?.[1] || '0,0,0,0.95';
         const [r, g, b] = baseColor.split(',').map(v => parseFloat(v.trim()));
         context.strokeStyle = `rgba(${r},${g},${b},${crackAlpha * 0.95})`;
         context.lineWidth = Math.max(1, baseSize * CONFIG.CRACK_LINE_WIDTH_FACTOR);
@@ -556,7 +612,7 @@ function renderState(context, width, height, state, elapsedMs, stateStartTime, b
     }
     case STATES.COMPLETE: {
       // Show final enlarged, scarred heart with all accumulated displacement
-      context.fillStyle = 'rgb(255,20,60)';
+      context.fillStyle = heartColorString;
       if (accumulatedDisplacements.length > 0) {
         drawHeartWithAccumulatedDisplacement(context, width / 2, height / 2, baseSize, boundaryCache, accumulatedDisplacements, baseSize);
       } else {
@@ -622,9 +678,16 @@ const sketch = ({ width, height }) => {
 
   // Cycle tracking
   let smallCycleCount = 0; // How many small cycles completed (0 to MAX_SMALL_CYCLES)
+  let sizeGrowthMultiplier = 1.0; // Accumulates 5% growth per cycle
+
+  // Color configuration (randomized per big cycle)
+  let heartColor = generateHeartColor();
+  let crackColor = generateCrackColor(heartColor);
+  let heartColorString = colorToRgbString(heartColor);
+  let crackColorString = colorToRgbaString(crackColor, 0.95);
 
   return ({ context, width, height }) => {
-    const baseSize = Math.min(width, height) * baseSizeFactor;
+    const baseSize = Math.min(width, height) * baseSizeFactor * sizeGrowthMultiplier;
     const elapsedMs = Date.now() - startTime;
     const { beatsElapsed, beatPhase } = calculateBeatScale(elapsedMs, CONFIG.BPM, CONFIG.BEAT_AMPLITUDE); // reuse to get beatsElapsed
     const beatsSinceOffset = beatsElapsed - beatOffset;
@@ -654,7 +717,15 @@ const sketch = ({ width, height }) => {
         smallCycleCount = 0;
         accumulatedDisplacements = [];
         boundaryCache = null;
-        baseSizeFactor = 0.35; // Reset size to original
+        baseSizeFactor = 0.35; // Reset base size factor to original
+        sizeGrowthMultiplier = 1.0; // Reset size to original
+
+        // Generate new random colors for next big cycle
+        heartColor = generateHeartColor();
+        crackColor = generateCrackColor(heartColor);
+        heartColorString = colorToRgbString(heartColor);
+        crackColorString = colorToRgbaString(crackColor, 0.95);
+        console.log(`New colors - Heart: ${heartColorString}, Crack: ${crackColorString}`);
       }
 
       if (currentState === STATES.CRACKING) {
@@ -700,9 +771,9 @@ const sketch = ({ width, height }) => {
         smallCycleCount++;
         console.log(`Small cycle ${smallCycleCount}/${CONFIG.MAX_SMALL_CYCLES} completed`);
 
-        // Increase heart size by X% after each cycle
-        baseSizeFactor *= 1.04;
-        console.log(`Heart size increased to ${(baseSizeFactor / 0.35 * 100).toFixed(1)}% of original`);
+        // Increase heart size by 5% after each cycle
+        sizeGrowthMultiplier *= 1.04;
+        console.log(`Heart size increased to ${(sizeGrowthMultiplier * 100).toFixed(1)}% of original`);
 
         // Store cracks for fading
         fadingCracks = crackPaths.slice(); // copy array
@@ -748,7 +819,7 @@ const sketch = ({ width, height }) => {
     }
 
     // Render current state
-    renderState(context, width, height, currentState, elapsedMs, stateStartTime, baseSize, beatOffset, crackPaths, boundaryCache, accumulatedDisplacements, fadingCracks, scarFadeStartTime);
+    renderState(context, width, height, currentState, elapsedMs, stateStartTime, baseSize, beatOffset, crackPaths, boundaryCache, accumulatedDisplacements, fadingCracks, scarFadeStartTime, heartColorString, crackColorString);
   };
 };
 
