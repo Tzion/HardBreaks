@@ -13,28 +13,37 @@ const STATES = {
   COMPLETE: 'COMPLETE'
 };
 
-// Configuration for timing (will expand later per phase)
-const CONFIG = {
-  BPM: 50,                  // heart beats per minute in BEATING state
-  BEATS_BEFORE_HALTING: 4,  // number of full beats before halting
-  HALT_DURATION_MS: 1500,   // how long to stay halted (ms)
-  BEAT_AMPLITUDE: 0.25,     // 25% enlargement at peak
-  BASE_SIZE_FACTOR: 0.35,   // base heart size as fraction of canvas (35%)
-  CRACK_COUNT: 2,           // number of cracks to generate
-  CRACK_DURATION_MS: 2800,  // duration of crack growth animation
-  CRACK_STEPS_MIN: 12,
-  CRACK_STEPS_MAX: 28,
-  CRACK_NOISE_FREQ_MIN: 30,
-  CRACK_NOISE_FREQ_MAX: 120,
-  CRACK_NOISE_AMP_MIN: 8,
-  CRACK_NOISE_AMP_MAX: 45,
-  CRACK_LINE_WIDTH_FACTOR: 0.05, // wider cracks
-  CRACK_COLOR: 'rgba(0,0,0,0.95)', // darker fracture color
-  HEALING_DURATION_MS: 20000, // duration of healing (crack fade-out)
-  COMPLETE_DURATION_MS: 3000, // pause duration at completion before reset
-  MAX_SMALL_CYCLES: 4,       // number of small cycles before big cycle reset
-  SCAR_FADE_DURATION_MS: 3000 // time to fade out previous cycle's displacement/color
-};
+// Configuration generation - combines fixed and randomized parameters
+function generateConfig() {
+  return {
+    // Fixed timing parameters
+    BPM: 50,                  // heart beats per minute in BEATING state
+    BEATS_BEFORE_HALTING: 4,  // number of full beats before halting
+    HALT_DURATION_MS: 1500,   // how long to stay halted (ms)
+    BEAT_AMPLITUDE: 0.25,     // 25% enlargement at peak
+    CRACK_COUNT: 2,           // number of cracks to generate
+    CRACK_DURATION_MS: 2800,  // duration of crack growth animation
+    CRACK_STEPS_MIN: 12,
+    CRACK_STEPS_MAX: 28,
+    CRACK_NOISE_FREQ_MIN: 30,
+    CRACK_NOISE_FREQ_MAX: 120,
+    CRACK_NOISE_AMP_MIN: 8,
+    CRACK_NOISE_AMP_MAX: 45,
+    CRACK_COLOR: 'rgba(0,0,0,0.95)', // darker fracture color
+    HEALING_DURATION_MS: 20000, // duration of healing (crack fade-out)
+    COMPLETE_DURATION_MS: 3000, // pause duration at completion before reset
+    MAX_SMALL_CYCLES: 4,       // number of small cycles before big cycle reset
+    SCAR_FADE_DURATION_MS: 3000, // time to fade out previous cycle's displacement/color
+
+    // Randomized parameters (new values each big cycle)
+    BASE_SIZE_FACTOR: random.range(0.1, 0.4),   // base heart size as fraction of canvas
+    CRACK_LINE_WIDTH_FACTOR: random.range(0.05, 0.25), // crack thickness
+  };
+}
+
+// Initial configuration
+let CONFIG = generateConfig();
+
 
 // Color palette generation
 function generateHeartColor() {
@@ -672,7 +681,6 @@ function sampleDisplacedBoundary(cx, cy, boundaryCache, accumulatedDisplacements
 // Crack class moved to ./cracks.js for reuse & testing
 
 const sketch = ({ width, height }) => {
-  let baseSizeFactor = CONFIG.BASE_SIZE_FACTOR;
   const startTime = Date.now();
 
   // State machine variables
@@ -698,7 +706,7 @@ const sketch = ({ width, height }) => {
   let crackColorString = colorToRgbaString(crackColor, 0.95);
 
   return ({ context, width, height }) => {
-    const baseSize = Math.min(width, height) * baseSizeFactor * sizeGrowthMultiplier;
+    const baseSize = Math.min(width, height) * CONFIG.BASE_SIZE_FACTOR;
     const elapsedMs = Date.now() - startTime;
     const { beatsElapsed, beatPhase } = calculateBeatScale(elapsedMs, CONFIG.BPM, CONFIG.BEAT_AMPLITUDE); // reuse to get beatsElapsed
     const beatsSinceOffset = beatsElapsed - beatOffset;
@@ -728,7 +736,9 @@ const sketch = ({ width, height }) => {
         smallCycleCount = 0;
         accumulatedDisplacements = [];
         boundaryCache = null;
-        baseSizeFactor = CONFIG.BASE_SIZE_FACTOR; // Reset base size factor to original
+
+        // Regenerate CONFIG with new random parameters
+        CONFIG = generateConfig();
 
         // Generate new random colors for next big cycle
         heartColor = generateHeartColor();
@@ -742,6 +752,7 @@ const sketch = ({ width, height }) => {
 
         console.log(`New colors - Heart: ${heartColorString}, Crack: ${crackColorString}`);
         console.log(`New heart shape - width: ${heartShape_width.toFixed(2)}, roundness: ${heartShape_roundness.toFixed(2)}, bottom: ${heartShape_bottom.toFixed(2)}`);
+        console.log(`New config - BASE_SIZE_FACTOR: ${CONFIG.BASE_SIZE_FACTOR.toFixed(3)}, CRACK_LINE_WIDTH_FACTOR: ${CONFIG.CRACK_LINE_WIDTH_FACTOR.toFixed(3)}`);
       }
 
       if (currentState === STATES.CRACKING) {
