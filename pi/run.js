@@ -55,7 +55,7 @@ async function runSketchAnimation(sketchAnimation, settings) {
 const settings = {
     dimensions: [490, 390],
     animate: true,
-    fps: 25
+    fps: 17
 };
 
 runSketchAnimation(heartbreaksAnimation, settings)
