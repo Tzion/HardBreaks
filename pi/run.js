@@ -18,9 +18,22 @@ async function runSketchAnimation(sketchAnimation, settings) {
     });
 
     const { context } = manager.props;
-    await transmit.connect();
 
-    setInterval(() => {
+    try {
+        await transmit.connect();
+    } catch (err) {
+        console.error('Failed to connect to controller:', err.message);
+    }
+
+    setInterval(async () => {
+        // Check health before sending
+        if (!transmit.isHealthy()) {
+            console.warn('Connection unhealthy, reconnecting...');
+            await transmit.disconnect();
+            await transmit.connect();
+            return; // Skip this frame
+        }
+
         manager.render();
         // SAVE ONLY FOR DEBUGGING NOT PRODUCTION!!!
         // const outPath = 'last-frame.png';
