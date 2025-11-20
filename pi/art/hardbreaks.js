@@ -90,9 +90,17 @@ function colorToRgbaString(color, alpha) {
   return `rgba(${Math.round(color.r)}, ${Math.round(color.g)}, ${Math.round(color.b)}, ${alpha})`;
 }
 
-let heartShape_width = 13 // should be ranom range between 13-18
-let heartShape_roundness = 5 // should be random range between 4 - 7
-let heartShape_bottom = 1 // should be random range between 0.2 - 1 //forth one
+function generateHeartShapeParams() {
+  return {
+    width: random.range(13, 18),
+    roundness: random.range(4, 7),
+    bottom: random.range(0.2, 1)
+  };
+}
+
+let heartShape_width = 13 // randomized per big cycle: 13-18
+let heartShape_roundness = 5 // randomized per big cycle: 4-7
+let heartShape_bottom = 1 // randomized per big cycle: 0.2-1
 function drawHeart(context, cx, cy, size) {
   context.beginPath();
   for (let t = 0; t < Math.PI * 2; t += 0.08) {
@@ -114,7 +122,7 @@ function drawHeartWithDisplacement(context, cx, cy, size, crackPaths, healProgre
   for (let i = 0; i <= segments; i++) {
     const t = (i / segments) * Math.PI * 2;
     const xt = 19 * Math.pow(Math.sin(t), 3);
-    const yt = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 3 * Math.cos(3 * t) - 1 * Math.cos(4 * t));
+    const yt = -(heartShape_width * Math.cos(t) - heartShape_roundness * Math.cos(2 * t) - 3 * Math.cos(3 * t) - heartShape_bottom * Math.cos(4 * t));
 
     // Base point on heart boundary
     const basePoint = { x: cx + (xt * size) / 16, y: cy + (yt * size) / 16 };
@@ -223,7 +231,7 @@ function buildHeartPathWithDisplacement(context, cx, cy, size, crackPaths, healP
   for (let i = 0; i <= segments; i++) {
     const t = (i / segments) * Math.PI * 2;
     const xt = 19 * Math.pow(Math.sin(t), 3);
-    const yt = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 3 * Math.cos(3 * t) - 1 * Math.cos(4 * t));
+    const yt = -(heartShape_width * Math.cos(t) - heartShape_roundness * Math.cos(2 * t) - 3 * Math.cos(3 * t) - heartShape_bottom * Math.cos(4 * t));
 
     // Base point on heart boundary
     const basePoint = { x: cx + (xt * size) / 16, y: cy + (yt * size) / 16 };
@@ -289,7 +297,7 @@ function buildHeartPath(context, cx, cy, size) {
   context.beginPath();
   for (let t = 0; t < Math.PI * 2; t += 0.05) {
     const xt = 19 * Math.pow(Math.sin(t), 3);
-    const yt = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 3 * Math.cos(3 * t) - 1 * Math.cos(4 * t));
+    const yt = -(heartShape_width * Math.cos(t) - heartShape_roundness * Math.cos(2 * t) - 3 * Math.cos(3 * t) - heartShape_bottom * Math.cos(4 * t));
     const x = cx + (xt * size) / 16;
     const y = cy + (yt * size) / 16;
     if (t === 0) context.moveTo(x, y); else context.lineTo(x, y);
@@ -631,7 +639,7 @@ function sampleHeartBoundary(size, samples = 240) {
   for (let i = 0; i < samples; i++) {
     const t = (i / samples) * Math.PI * 2;
     const xt = 19 * Math.pow(Math.sin(t), 3);
-    const yt = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 3 * Math.cos(3 * t) - 1 * Math.cos(4 * t));
+    const yt = -(heartShape_width * Math.cos(t) - heartShape_roundness * Math.cos(2 * t) - 3 * Math.cos(3 * t) - heartShape_bottom * Math.cos(4 * t));
     pts.push({ x: (xt * size) / 16, y: (yt * size) / 16 });
   }
   return pts;
@@ -727,7 +735,13 @@ const sketch = ({ width, height }) => {
         crackColor = generateCrackColor(heartColor);
         heartColorString = colorToRgbString(heartColor);
         crackColorString = colorToRgbaString(crackColor, 0.95);
+
+        // Generate new random heart shape parameters
+        const shapeParams = generateHeartShapeParams();
+        ({ width: heartShape_width, roundness: heartShape_roundness, bottom: heartShape_bottom } = shapeParams);
+
         console.log(`New colors - Heart: ${heartColorString}, Crack: ${crackColorString}`);
+        console.log(`New heart shape - width: ${heartShape_width.toFixed(2)}, roundness: ${heartShape_roundness.toFixed(2)}, bottom: ${heartShape_bottom.toFixed(2)}`);
       }
 
       if (currentState === STATES.CRACKING) {
