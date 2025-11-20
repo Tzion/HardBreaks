@@ -17,16 +17,26 @@ function drawHeart(context, cx, cy, size) {
 }
 
 const sketch = () => {
-    return ({ context, width, height }) => {
+    const BPM = 120; // beats per minute (real-time, not tied to FPS)
+    const baseSizeFactor = 0.25; // fraction of min dimension
+    return ({ context, width, height, time }) => {
+        const baseSize = Math.min(width, height) * baseSizeFactor;
         // Background
         context.fillStyle = 'black';
         context.fillRect(0, 0, width, height);
 
-        // Static heart (no animation yet)
+        // Time-based beat phase stays consistent regardless of actual frame rate
+        // Beats per second = BPM / 60; total beats elapsed = time * BPM / 60
+        const beatsElapsed = time * BPM / 60;
+        const beatPhase = beatsElapsed % 1; // 0..1 within current beat
+        const pulse = Math.sin(beatPhase * Math.PI); // smooth in/out
+        const scale = 1 + 0.25 * pulse; // enlarge up to +25%
+
         context.save();
         context.translate(width / 2, height / 2);
+        context.scale(scale, scale);
         context.fillStyle = 'rgb(255,20,60)';
-        drawHeart(context, 0, 0, Math.min(width, height) * 0.25);
+        drawHeart(context, 0, 0, baseSize);
         context.restore();
     };
 };
@@ -35,7 +45,8 @@ const isBrowser = typeof window !== 'undefined';
 if (isBrowser) {
     canvasSketch(sketch, {
         dimensions: [490, 390], // Matches LED aspect scaled for dev preview
-        animate: false
+        animate: true,
+        fps: 10
     });
 }
 
