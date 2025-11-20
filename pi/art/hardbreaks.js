@@ -27,7 +27,7 @@ const CONFIG = {
   CRACK_NOISE_FREQ_MAX: 120,
   CRACK_NOISE_AMP_MIN: 8,
   CRACK_NOISE_AMP_MAX: 45,
-  CRACK_LINE_WIDTH_FACTOR: 0.1, // wider cracks
+  CRACK_LINE_WIDTH_FACTOR: 0.05, // wider cracks
   CRACK_COLOR: 'rgba(0,0,0,0.95)', // darker fracture color
   HEALING_DURATION_MS: 20000, // duration of healing (crack fade-out)
   COMPLETE_DURATION_MS: 3000, // pause duration at completion before reset
@@ -269,7 +269,7 @@ function buildHeartPathWithAccumulatedDisplacement(context, cx, cy, size, bounda
 }
 
 /**
- * Calculate beat scale based on elapsed time
+ * Calculate beat scale based on elapsed time with realistic double-pulse (lub-dub) pattern
  * @param {number} elapsedMs - Milliseconds since animation start
  * @param {number} bpm - Beats per minute
  * @param {number} amplitude - How much to scale (0.25 = 25% larger at peak)
@@ -282,7 +282,31 @@ function calculateBeatScale(elapsedMs, bpm, amplitude = 0.25) {
   const beatsPerSecond = bpm / 60;
   const beatsElapsed = (elapsedMs / 1000) * beatsPerSecond;
   const beatPhase = beatsElapsed % 1; // 0..1 within current beat
-  const pulse = Math.sin(beatPhase * Math.PI); // smooth in/out, peaks at 0.5
+  
+  // Two-pulse heartbeat pattern (lub-dub)
+  // First pulse (lub) at ~60% through cycle
+  // Second pulse (dub) at ~80% through cycle, slightly larger
+  let pulse = 0;
+  
+  if (beatPhase < 0.55) {
+    // Resting phase before first pulse
+    pulse = 0;
+  } else if (beatPhase < 0.7) {
+    // First pulse (lub) - quick rise and fall
+    const lubPhase = (beatPhase - 0.55) / 0.15; // 0 to 1 over 15% of beat
+    pulse = Math.sin(lubPhase * Math.PI) * 0.85; // 85% of full amplitude
+  } else if (beatPhase < 0.75) {
+    // Brief pause between pulses
+    pulse = 0;
+  } else if (beatPhase < 0.92) {
+    // Second pulse (dub) - slightly larger and longer
+    const dubPhase = (beatPhase - 0.75) / 0.17; // 0 to 1 over 17% of beat
+    pulse = Math.sin(dubPhase * Math.PI) * 1.0; // 100% of full amplitude
+  } else {
+    // Resting phase after second pulse
+    pulse = 0;
+  }
+  
   return { scale: 1 + amplitude * pulse, beatsElapsed, beatPhase };
 }
 
