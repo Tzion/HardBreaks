@@ -7,6 +7,7 @@ import { toRGB, createPacket, remapToPhysicalLayout } from './frame.js';
 import fs from 'fs';
 import crackAnimation from './art/crack.js';
 import heartbreaksAnimation from './art/hardbreaks.js';
+import ambientAnimation from './art/ambient.js';
 
 async function runSketchAnimation(sketchAnimation, settings) {
     const [width, height] = settings.dimensions;
@@ -58,4 +59,4 @@ const settings = {
     fps: 17
 };
 
-runSketchAnimation(heartbreaksAnimation, settings)
+runSketchAnimation(ambientAnimation, settings)
