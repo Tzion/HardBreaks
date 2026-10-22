@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HardBreaks Learned to Speak</title>
+  <meta name="description" content="הארד-ברייקס, הלב הפועם, מזמין אתכם לשלוח קטעי יומן.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;500&family=Anton&family=Caveat:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <video class="cover" autoplay muted loop playsinline aria-hidden="true">
+    <source src="assets/cover.mp4" type="video/mp4">
+  </video>
+
+  <main>
+    <section class="intro">
+      <h1 dir="ltr">
+        <span class="brand">HardBreaks</span>
+        <span class="tagline">Learned to Speak</span>
+      </h1>
+      <p>
+        הארד-ברייקס, הלב (הפועם) מגיע שוב למידברן,<br>
+        הפעם הוא למד לדבר.<br>
+        הלב נפעם לשמוע סיפור שלכן,<br>
+        סיפור של אהבה, אכזבה, שברון לב<br>
+        בגרסא הכי אותנטית, כנה, חשופה, ופגיעה שלכם.
+      </p>
+      <p>
+        הלב מזמין אתכם לשלוח אליו קטעי יומן<br>
+        טקסט או הקלטה<br>
+        שאותם, הוא יספר, לרגע אחד, בדיפ פלאיה.<br>
+        מול מי שתהיה או לא יהיה שם.
+      </p>
+      <a class="cta" href="#share" dir="ltr">Share your Story</a>
+    </section>
+
+    <section class="image">
+      <img class="image-fill" src="assets/image.jpg" alt="" aria-hidden="true" onerror="this.parentElement.remove()">
+      <img class="image-main" src="assets/image.jpg" alt="HardBreaks">
+    </section>
+
+    <section id="share" class="share" dir="ltr">
+      <fieldset class="segmented">
+        <legend>Share as</legend>
+        <label><input type="radio" name="kind" value="text" checked><span>Text</span></label>
+        <label><input type="radio" name="kind" value="image"><span>Image</span></label>
+        <label><input type="radio" name="kind" value="recording"><span>Recording</span></label>
+      </fieldset>
+    </section>
+  </main>
+</body>
+</html>
