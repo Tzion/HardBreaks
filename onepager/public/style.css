@@ -238,15 +238,32 @@ textarea {
 .note.ok { color: #7ee2a8; opacity: 1; }
 .note.error { color: #ff8fa8; opacity: 1; }
 
+/* Hidden but still in the layout: iOS won't open a file input that is display:none */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
 .link {
   align-self: flex-start;
   padding: 0;
-  font: inherit;
+  font-family: "Caveat", cursive;
+  font-size: 1.5rem;
+  font-weight: 500;
   color: var(--magenta);
   background: none;
   border: 0;
   text-decoration: underline;
   cursor: pointer;
+}
+
+.note.hint {
+  font-size: 1.2rem;
+  opacity: 0.7;
 }
 
 #submit {

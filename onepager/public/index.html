@@ -26,9 +26,9 @@
         <span class="tagline">Learned to Speak</span>
       </h1>
       <p>
-        הארד-ברייקס, הלב (הפועם) מגיע שוב למידברן,<br>
-        הפעם הוא למד לדבר.<br>
-        הלב נפעם לשמוע סיפור שלכן,<br>
+        הארד-ברייקס - הלב הפועם - מגיע שוב למידברן,<br>
+        והפעם הוא למד לדבר.<br>
+        כעת הלב נפעם לשמוע סיפור שלכן,<br>
         סיפור של אהבה, אכזבה, שברון לב<br>
         בגרסא הכי אותנטית, כנה, חשופה, ופגיעה שלכם.
       </p>
@@ -38,7 +38,7 @@
         שאותם, הוא יספר, לרגע אחד, בדיפ פלאיה.<br>
         מול מי שתהיה או לא יהיה שם.
       </p>
-      <a class="cta" href="#share" dir="ltr">Share your Story</a>
+      <a class="cta" href="#share" dir="ltr">Share a Story</a>
     </section>
 
     <section class="image">
@@ -64,16 +64,20 @@
           </fieldset>
         </div>
 
+        <!-- Outside the panel: iOS won't open a file input inside a hidden container -->
+        <input id="audio-file" type="file" name="audio" class="visually-hidden">
+
         <div id="recording-panel" class="panel" hidden>
-          <input id="audio-file" type="file" name="audio" accept="audio/*" hidden>
           <p id="file-status" class="note">No file selected.</p>
-          <button type="button" id="choose-file" class="link">Choose a file</button>
+          <label for="audio-file" class="link">Choose a file</label>
         </div>
 
         <button type="submit" id="submit" class="cta send" disabled>Send to HardBreaks</button>
+        <p id="send-status" class="note" aria-live="polite"></p>
       </form>
     </section>
 
+    <script src="vendor/lame.min.js"></script>
     <script src="script.js"></script>
   </main>
 </body>
