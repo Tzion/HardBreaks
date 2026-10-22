@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="he" dir="rtl">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,9 +8,12 @@
   <meta name="description" content="הארד-ברייקס, הלב הפועם, מזמין אתכם לשלוח קטעי יומן.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;500&family=Anton&family=Caveat:wght@500&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;500;700&family=Anton&family=Caveat:wght@500&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <video class="cover" autoplay muted loop playsinline aria-hidden="true">
     <source src="assets/cover.mp4" type="video/mp4">
@@ -43,13 +47,35 @@
     </section>
 
     <section id="share" class="share" dir="ltr">
-      <fieldset class="segmented">
-        <legend>Share as</legend>
-        <label><input type="radio" name="kind" value="text" checked><span>Text</span></label>
-        <label><input type="radio" name="kind" value="image"><span>Image</span></label>
-        <label><input type="radio" name="kind" value="recording"><span>Recording</span></label>
-      </fieldset>
+      <form id="share-form">
+        <fieldset class="toggle">
+          <legend>Share as</legend>
+          <label><input type="radio" name="kind" value="text" checked><span>Text</span></label>
+          <label><input type="radio" name="kind" value="recording"><span>Recording</span></label>
+        </fieldset>
+
+        <div id="text-panel" class="panel">
+          <textarea name="text" rows="8" maxlength="4000" dir="auto" placeholder="Write it here…"></textarea>
+          <p class="explain">HardBreaks will read your words in a generated voice.<br>Choose the voice:</p>
+          <fieldset class="toggle small">
+            <legend>Voice</legend>
+            <label><input type="radio" name="voice" value="female" checked><span>Female voice</span></label>
+            <label><input type="radio" name="voice" value="male"><span>Male voice</span></label>
+          </fieldset>
+        </div>
+
+        <div id="recording-panel" class="panel" hidden>
+          <input id="audio-file" type="file" name="audio" accept="audio/*" hidden>
+          <p id="file-status" class="note">No file selected.</p>
+          <button type="button" id="choose-file" class="link">Choose a file</button>
+        </div>
+
+        <button type="submit" id="submit" class="cta send" disabled>Send to HardBreaks</button>
+      </form>
     </section>
+
+    <script src="script.js"></script>
   </main>
 </body>
+
 </html>
