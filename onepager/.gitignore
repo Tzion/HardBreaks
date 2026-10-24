@@ -3,3 +3,6 @@ package-lock.json
 
 # R2 credentials for `netlify dev`, never commit
 .env
+
+# Local backups of media
+public/assets/*.bkp
