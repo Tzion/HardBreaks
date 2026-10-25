@@ -9,7 +9,7 @@ A beating heart, then it breaks—slowly filling the cracks, healing, growing bi
 - **Raspberry Pi**: runs the animations and the UX state machine (Node.js, started by a systemd service).
 - **RP2040**: gets frames from the Pi over USB serial and drives the 7 LED data lines. A series resistor protects each data line.
 - **Power**: one 12V supply (400W).
-- **Audio**: small class-D amplifier (YS-LT21).
+- **Audio**: small class-D amplifier (YS-LT21) or JBL speaker
 
 ## Repo layout
 
@@ -17,7 +17,7 @@ A beating heart, then it breaks—slowly filling the cracks, healing, growing bi
 - `sink/rp2040-led/`: RP2040 firmware (PlatformIO)
 - `sink/simulator/`: browser simulator of the matrix
 - `config.js`: shared config; `npm run config:h` generates the firmware `config.h`
-- `hardbreaks.service`: systemd unit for the Pi
+- `services/`: systemd units for the Pi (`hardbreaks.service` runs the animation, `bt-speaker.service` keeps the Bluetooth speaker connected; setup steps inside each)
 
 ## Before launch
 

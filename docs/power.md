@@ -1,5 +1,7 @@
 # Power
 
+This is power plan for future lon term installation. ignore it for the current setup (Nov 26)
+
 Rule: keep only what the components need to survive. The installation runs where there are no spare parts or tools.
 
 One AC plug feeds everything through a single 12V PSU. Because the LEDs and the logic power up together, the LEDs can never come on before the controller.
