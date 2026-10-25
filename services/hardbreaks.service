@@ -13,9 +13,6 @@ ExecStart=/usr/bin/node /home/pi/HardBreaks/pi/run.js
 Restart=always
 RestartSec=10
 
-# Restart every 1 hour 1 minute and 3 seconds
-RuntimeMaxSec=3663
-
 [Install]
 WantedBy=multi-user.target
 

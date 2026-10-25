@@ -1,0 +1,34 @@
+# place in  /etc/systemd/system/bt-speaker.service
+# Keeps the Bluetooth speaker connected; reconnects whenever it comes back on.
+#
+# One-time setup, with the read-only overlay OFF (pairing is saved in /var/lib/bluetooth
+# and would be lost on reboot otherwise):
+#   1. Turn the speaker on, then: sudo bluetoothctl
+#        scan on          (wait for the speaker's MAC, then: scan off)
+#        pair <MAC>
+#        trust <MAC>
+#        connect <MAC>
+#        quit
+#   2. Put the MAC in SPEAKER_MAC below.
+#   3. sudo systemctl daemon-reload && sudo systemctl enable --now bt-speaker
+#   4. Check: journalctl -u bt-speaker -f   (should say "speaker connected")
+#   5. Turn the speaker off and on and confirm it reconnects, then reboot the Pi and confirm again.
+
+[Unit]
+Description=HardBreaks - keep the Bluetooth speaker connected
+After=bluetooth.service
+Wants=bluetooth.service
+# never give up restarting
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Environment=SPEAKER_MAC=XX:XX:XX:XX:XX:XX
+ExecStart=/bin/bash /home/pi/HardBreaks/services/bt-speaker.sh
+
+# wait 10 seconds if crashes, then restart
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
