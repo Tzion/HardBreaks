@@ -9,8 +9,8 @@
 #        trust <MAC>
 #        connect <MAC>
 #        quit
-#   2. Put the MAC in SPEAKER_MAC below.
-#   3. sudo systemctl daemon-reload && sudo systemctl enable --now bt-speaker
+#   2. Put the MAC in SPEAKER_MAC below and commit it, so every deploy installs the right one.
+#   3. ./deploy.sh services   (from the Mac)
 #   4. Check: journalctl -u bt-speaker -f   (should say "speaker connected")
 #   5. Turn the speaker off and on and confirm it reconnects, then reboot the Pi and confirm again.
 
@@ -23,7 +23,7 @@ StartLimitIntervalSec=0
 
 [Service]
 Type=simple
-Environment=SPEAKER_MAC=XX:XX:XX:XX:XX:XX
+Environment=SPEAKER_MAC=40:EF:4C:76:C1:E0
 ExecStart=/bin/bash /home/pi/HardBreaks/services/bt-speaker.sh
 
 # wait 10 seconds if crashes, then restart

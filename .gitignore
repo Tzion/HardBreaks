@@ -34,3 +34,5 @@ Thumbs.db
 creative-coding-course/node_modules/
 # Local Netlify folder
 .netlify
+
+.claude/

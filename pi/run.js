@@ -36,6 +36,7 @@ async function runSketchAnimation(sketchAnimation, settings) {
         }
 
         manager.render();
+        // TODO AI: wrap into DEBUG flag default to false.
         // SAVE ONLY FOR DEBUGGING NOT PRODUCTION!!!
         // const outPath = 'last-frame.png';
         // try {

@@ -3,7 +3,6 @@
 # Never exits: when the speaker is off it keeps trying, and it reconnects as soon as the speaker is back.
 # Logs only changes, so the journal (RAM under the read-only overlay) doesn't fill up.
 
-SPEAKER_MAC="40:EF:4C:76:C1:E0"
 MAC="${SPEAKER_MAC:?set SPEAKER_MAC in bt-speaker.service}"
 CHECK_EVERY=10 # seconds between checks
 

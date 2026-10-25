@@ -2,6 +2,8 @@
 [Unit]
 Description=HardBreaks LED Matrix - run animation
 After=network.target
+# never give up restarting
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
