@@ -16,7 +16,9 @@ async function runVideo(videoPath, settings) {
     console.log('Preparing video frames, please wait...');
     const videoSketch = await createVideoAnimation(videoPath, {
         fps: settings.fps,
-        loop: settings.loop !== false
+        loop: settings.loop !== false,
+        mode: settings.mode,
+        size: settings.dimensions
     });
     console.log('All frames loaded. Starting playback.');
 
@@ -59,12 +61,13 @@ async function runVideo(videoPath, settings) {
     console.log(`Playing video at ${settings.fps} fps...`);
 }
 
-// Get video path from command line or use default
-const videoPath = process.argv[2] || path.join(process.cwd(), 'pi/art/videos/cooling1.mp4');
+// Get video path from command line or use default; --cache decodes to frame files first instead of streaming
+const args = process.argv.slice(2);
+const videoPath = args.find(a => !a.startsWith('--')) || path.join(process.cwd(), 'pi/art/videos/cooling1.mp4');
 
 if (!fs.existsSync(videoPath)) {
     console.error(`Video file not found: ${videoPath}`);
-    console.log('Usage: node pi/run_video.js [path/to/video.mp4]');
+    console.log('Usage: node pi/run_video.js [path/to/video.mp4] [--cache]');
     process.exit(1);
 }
 
@@ -72,7 +75,8 @@ const settings = {
     dimensions: [490, 390],
     animate: true,
     fps: 10,
-    loop: true
+    loop: true,
+    mode: args.includes('--cache') ? 'cache' : 'stream'
 };
 
 console.log(`Loading video: ${videoPath}`);

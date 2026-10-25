@@ -22,7 +22,7 @@ sudo apt-get install ffmpeg
 ### Run a video on the LED matrix:
 
 ```bash
-node pi/run_video.js [path/to/video.mp4]
+node pi/run_video.js [path/to/video.mp4] [--cache]
 ```
 
 ### Examples:
@@ -36,15 +36,21 @@ node pi/run_video.js pi/art/videos/cooling1.mp4
 
 # Play any MP4 file
 node pi/run_video.js /path/to/my/video.mp4
+
+# Decode to frame files first, then play from them
+node pi/run_video.js pi/art/videos/cooling1.mp4 --cache
 ```
 
 ## How It Works
 
-1. **Frame Extraction**: Uses `ffmpeg` to extract video frames at the specified FPS
-2. **Frame Loading**: Loads all frames into memory as images
-3. **Playback Loop**: Renders frames to canvas at specified FPS
-4. **Downscaling**: Scales canvas content down to 49x39 LED matrix resolution
-5. **Transmission**: Sends each frame to the LED controller via serial
+`ffmpeg` decodes the video at the playback FPS, already scaled down to the canvas size, into raw RGBA frames. Each frame is drawn on the canvas, scaled down to the 49x39 matrix, and sent to the LED controller over serial.
+
+There are two modes (`mode` option of `createVideoAnimation` in `pi/art/video.js`):
+
+- **stream** (default): ffmpeg runs during playback and keeps a few frames ahead; it's paused when that queue is full, so no frames are skipped. Starts instantly, memory stays flat, any video length works. ffmpeg loops the video itself (`-stream_loop`), so there's no gap at the loop. If ffmpeg dies, the last frame stays on screen and ffmpeg restarts after 2 seconds.
+- **cache** (`--cache`): ffmpeg decodes the whole video once into `/tmp/video-frames`, then playback reads the files back with no ffmpeg running. The folder is cleared on every start, so the next video replaces the previous one's frames, and it's capped at 100 MB (`CACHE_MAX_BYTES`). A longer video plays only the frames that fit, with a warning. On the Pi `/tmp` is in RAM.
+
+When a video ends without looping, the last frame stays on screen.
 
 ## Configuration
 
@@ -52,22 +58,18 @@ Edit `pi/run_video.js` to adjust settings:
 
 ```javascript
 const settings = {
-    dimensions: [1080, 1080],  // Canvas size (higher res = better quality)
-    animate: true,              // Enable animation loop
-    fps: 30,                    // Frames per second
-    loop: true                  // Loop video continuously
+    dimensions: [490, 390],  // Canvas size; frames are decoded at this size
+    animate: true,           // Enable animation loop
+    fps: 10,                 // Frames per second
+    loop: true,              // Loop video continuously
+    mode: 'stream'           // or 'cache' (set by --cache)
 };
 ```
 
 ## Performance Notes
 
-- **Frame extraction** happens once at startup and takes a few seconds
-- **All frames** are loaded into memory for smooth playback
-- **Large videos** with many frames may use significant RAM
-- For long videos, consider:
-  - Lowering FPS (e.g., 15-20 fps)
-  - Trimming video length
-  - Using lower resolution source videos
+- At 490x390 a frame is about 760 KB, so the 100 MB cache holds about 130 frames (13 s at 10 fps)
+- For long videos in cache mode, lower the FPS, trim the video, or use stream mode
 
 ## Adding Videos
 
