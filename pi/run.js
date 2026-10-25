@@ -60,4 +60,4 @@ const settings = {
     fps: 17
 };
 
-runSketchAnimation(ambientAnimation, settings)
+runSketchAnimation(heartbreaksAnimation, settings)
