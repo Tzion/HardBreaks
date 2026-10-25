@@ -44,35 +44,39 @@ let CONFIG = generateConfig();
 
 
 // Color palette generation
-function generateHeartColor() {
-  // Generate vibrant heart colors with more variety
-  const colorPalettes = [
-    // Classic reds
-    () => ({ r: random.rangeFloor(200, 255), g: random.rangeFloor(10, 40), b: random.rangeFloor(40, 80) }),
-    () => ({ r: random.rangeFloor(180, 230), g: random.rangeFloor(20, 50), b: random.rangeFloor(20, 60) }),
-    // Pinks
-    () => ({ r: random.rangeFloor(220, 255), g: random.rangeFloor(60, 120), b: random.rangeFloor(120, 180) }),
-    () => ({ r: random.rangeFloor(255, 255), g: random.rangeFloor(100, 150), b: random.rangeFloor(150, 200) }),
-    // Oranges
-    () => ({ r: random.rangeFloor(230, 255), g: random.rangeFloor(80, 150), b: random.rangeFloor(0, 60) }),
-    () => ({ r: random.rangeFloor(255, 255), g: random.rangeFloor(120, 180), b: random.rangeFloor(30, 80) }),
-    // Deep purples
-    () => ({ r: random.rangeFloor(120, 180), g: random.rangeFloor(20, 60), b: random.rangeFloor(140, 200) }),
-    () => ({ r: random.rangeFloor(100, 150), g: random.rangeFloor(30, 70), b: random.rangeFloor(160, 220) }),
-    // Magentas
-    () => ({ r: random.rangeFloor(200, 255), g: random.rangeFloor(0, 80), b: random.rangeFloor(150, 220) }),
-    () => ({ r: random.rangeFloor(220, 255), g: random.rangeFloor(20, 60), b: random.rangeFloor(180, 240) }),
-    // Coral/Salmon
-    () => ({ r: random.rangeFloor(240, 255), g: random.rangeFloor(100, 140), b: random.rangeFloor(100, 130) }),
-    // Hot pink
-    () => ({ r: random.rangeFloor(240, 255), g: random.rangeFloor(40, 90), b: random.rangeFloor(140, 180) }),
-    // Crimson
-    () => ({ r: random.rangeFloor(180, 220), g: random.rangeFloor(10, 30), b: random.rangeFloor(50, 90) }),
-    // Violet
-    () => ({ r: random.rangeFloor(140, 190), g: random.rangeFloor(60, 100), b: random.rangeFloor(180, 230) }),
-  ];
+// Pinks, also used on their own by the pink variant
+const PINK_PALETTES = [
+  () => ({ r: random.rangeFloor(220, 255), g: random.rangeFloor(60, 120), b: random.rangeFloor(120, 180) }),
+  () => ({ r: random.rangeFloor(255, 255), g: random.rangeFloor(100, 150), b: random.rangeFloor(150, 200) }),
+  // Hot pink
+  () => ({ r: random.rangeFloor(240, 255), g: random.rangeFloor(40, 90), b: random.rangeFloor(140, 180) }),
+];
 
-  const palette = random.pick(colorPalettes);
+// Vibrant heart colors with more variety
+const HEART_PALETTES = [
+  // Classic reds
+  () => ({ r: random.rangeFloor(200, 255), g: random.rangeFloor(10, 40), b: random.rangeFloor(40, 80) }),
+  () => ({ r: random.rangeFloor(180, 230), g: random.rangeFloor(20, 50), b: random.rangeFloor(20, 60) }),
+  ...PINK_PALETTES,
+  // Oranges
+  () => ({ r: random.rangeFloor(230, 255), g: random.rangeFloor(80, 150), b: random.rangeFloor(0, 60) }),
+  () => ({ r: random.rangeFloor(255, 255), g: random.rangeFloor(120, 180), b: random.rangeFloor(30, 80) }),
+  // Deep purples
+  () => ({ r: random.rangeFloor(120, 180), g: random.rangeFloor(20, 60), b: random.rangeFloor(140, 200) }),
+  () => ({ r: random.rangeFloor(100, 150), g: random.rangeFloor(30, 70), b: random.rangeFloor(160, 220) }),
+  // Magentas
+  () => ({ r: random.rangeFloor(200, 255), g: random.rangeFloor(0, 80), b: random.rangeFloor(150, 220) }),
+  () => ({ r: random.rangeFloor(220, 255), g: random.rangeFloor(20, 60), b: random.rangeFloor(180, 240) }),
+  // Coral/Salmon
+  () => ({ r: random.rangeFloor(240, 255), g: random.rangeFloor(100, 140), b: random.rangeFloor(100, 130) }),
+  // Crimson
+  () => ({ r: random.rangeFloor(180, 220), g: random.rangeFloor(10, 30), b: random.rangeFloor(50, 90) }),
+  // Violet
+  () => ({ r: random.rangeFloor(140, 190), g: random.rangeFloor(60, 100), b: random.rangeFloor(180, 230) }),
+];
+
+function generateHeartColor(palettes) {
+  const palette = random.pick(palettes);
   return palette();
 }
 
@@ -673,7 +677,8 @@ function sampleDisplacedBoundary(cx, cy, boundaryCache, accumulatedDisplacements
 
 // Crack class moved to ./cracks.js for reuse & testing
 
-const sketch = ({ width, height }) => {
+// Builds the sketch; palettes is the list of heart colors to pick from each big cycle
+const createSketch = (palettes) => ({ width, height }) => {
   const startTime = Date.now();
 
   // State machine variables
@@ -693,7 +698,7 @@ const sketch = ({ width, height }) => {
   let sizeGrowthMultiplier = 1.0; // Accumulates 5% growth per cycle
 
   // Color configuration (randomized per big cycle)
-  let heartColor = generateHeartColor();
+  let heartColor = generateHeartColor(palettes);
   let crackColor = generateCrackColor(heartColor);
   let heartColorString = colorToRgbString(heartColor);
   let crackColorString = colorToRgbaString(crackColor, 0.95);
@@ -734,7 +739,7 @@ const sketch = ({ width, height }) => {
         CONFIG = generateConfig();
 
         // Generate new random colors for next big cycle
-        heartColor = generateHeartColor();
+        heartColor = generateHeartColor(palettes);
         crackColor = generateCrackColor(heartColor);
         heartColorString = colorToRgbString(heartColor);
         crackColorString = colorToRgbaString(crackColor, 0.95);
@@ -839,6 +844,9 @@ const sketch = ({ width, height }) => {
     renderState(context, width, height, currentState, elapsedMs, stateStartTime, baseSize, beatOffset, crackPaths, boundaryCache, accumulatedDisplacements, fadingCracks, scarFadeStartTime, heartColorString, crackColorString);
   };
 };
+
+const sketch = createSketch(HEART_PALETTES);
+export const pinkSketch = createSketch(PINK_PALETTES); // same animation, pink hearts only
 
 const isBrowser = typeof window !== 'undefined';
 if (isBrowser) {
