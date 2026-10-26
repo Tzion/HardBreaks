@@ -15,9 +15,10 @@ const STATES = {
 
 // Configuration generation - combines fixed and randomized parameters
 function generateConfig() {
+  const BPM = random.rangeFloor(50, 120);  // heart beats per minute in BEATING state
   return {
     // Fixed timing parameters
-    BPM: random.rangeFloor(50, 120),  // heart beats per minute in BEATING state
+    BPM,
     BEAT_AMPLITUDE: random.range(0.1, 0.35),     // % enlargement at peak
     CRACK_COUNT: random.rangeFloor(1, 3),         // number of cracks to generate
     CRACK_STEPS_MIN: 12,
@@ -27,10 +28,11 @@ function generateConfig() {
     CRACK_NOISE_AMP_MIN: 8,
     CRACK_NOISE_AMP_MAX: 45,
     CRACK_COLOR: 'rgba(0,0,0,0.95)', // darker fracture color
-    BEATS_BEFORE_HALTING: random.rangeFloor(5, 20),  // number of full beats before halting
-    CRACK_DURATION_MS: random.rangeFloor(1000, 14000),  // duration of crack growth animation
+    // number of full beats before halting: 10-67 s of beating, rounded to whole beats at this BPM
+    BEATS_BEFORE_HALTING: Math.max(1, Math.round(random.range(10, 67) * BPM / 60)),
+    CRACK_DURATION_MS: random.rangeFloor(4000, 22000),  // duration of crack growth animation
     HALT_DURATION_MS: random.rangeFloor(500, 3000),   // how long to stay halted (ms)
-    HEALING_DURATION_MS: random.rangeFloor(1000, 14000), // duration of healing (crack fade-out)
+    HEALING_DURATION_MS: random.rangeFloor(10000, 33000), // duration of healing (crack fade-out)
     MAX_SMALL_CYCLES: random.rangeFloor(2, 6),       // number of small cycles before big cycle reset
     SCAR_FADE_DURATION_MS: random.rangeFloor(3000, 8000), // time to fade out previous cycle's displacement/color
     BASE_SIZE_FACTOR: random.range(0.1, 0.47),   // base heart size as fraction of canvas
