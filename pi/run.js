@@ -15,10 +15,10 @@ const DEBUG = ['1', 'true'].includes(process.env.DEBUG);
 // The playlist (see pi/player.js): the first item plays first, then the order setting decides.
 // transitionIn is the transition used when switching to that item; otherwise the default below.
 const player = new Player([
-    { name: 'ambient pink', sketch: ambientAnimation, minutes: 1 , transitionIn: crossfade({ seconds: 4 }) },
-    { name: 'hardbreaks pink', sketch: pinkSketch, minutes: 1, transitionIn: gather({ seconds: 4 }) },
+    { name: 'ambient pink', sketch: ambientAnimation, minutes: 7 , transitionIn: crossfade({ seconds: 20 }) },
+    { name: 'hardbreaks pink', sketch: pinkSketch, minutes: 3, transitionIn: gather({ seconds: 10 }) },
 ], {
-    size: [490, 390],
+    size: [147, 117], // 3× the 49×39 LEDs: smooth edges after shrinking, without wasting CPU
     order: 'shuffle',
     transition: fadeThroughBlack({ seconds: 2 }),
 });
