@@ -1,5 +1,5 @@
 // ambient.js - Ambient light animations for 49x39 LED matrix
-// Cycles through 4 scenes: aurora, embers, ocean, midnight
+// Cycles through 4 scenes: aurora, embers, ocean, midnight, all in pinks (hue ~315-355)
 // TO RUN (browser dev): canvas-sketch ambient.js --open
 import canvasSketch from 'canvas-sketch';
 import random from 'canvas-sketch-util/random.js';
@@ -30,7 +30,7 @@ function hslToRgb(h, s, l) {
   ];
 }
 
-// Aurora borealis: green-blue-purple bands flowing horizontally
+// Aurora borealis: magenta-pink to rose bands flowing horizontally
 function fillAurora(buf, t) {
   for (let py = 0; py < LED_H; py++) {
     for (let px = 0; px < LED_W; px++) {
@@ -45,7 +45,7 @@ function fillAurora(buf, t) {
       const verticalFade = Math.pow(Math.max(0, 1 - ny * 0.8), 1.5);
       const brightness = (combined * 0.5 + 0.5) * verticalFade;
 
-      const hue = 120 + (n2 * 0.5 + 0.5) * 140; // green (120) → purple (260)
+      const hue = 315 + (n2 * 0.5 + 0.5) * 40; // magenta-pink (315) → rose (355)
       const [r, g, b] = hslToRgb(hue, 0.9, brightness * 0.5);
 
       const i = (py * LED_W + px) * 4;
@@ -54,7 +54,7 @@ function fillAurora(buf, t) {
   }
 }
 
-// Embers/fire: warm heat rising from the bottom
+// Embers: pink heat rising from the bottom (black → deep rose → hot pink → pale pink)
 function fillEmbers(buf, t) {
   for (let py = 0; py < LED_H; py++) {
     for (let px = 0; px < LED_W; px++) {
@@ -71,16 +71,16 @@ function fillEmbers(buf, t) {
       let r, g, b;
       if (heat < 0.2) {
         const p = heat / 0.2;
-        r = p * 80; g = 0; b = 0;
+        r = p * 80; g = 0; b = p * 30;
       } else if (heat < 0.5) {
         const p = (heat - 0.2) / 0.3;
-        r = 80 + p * 175; g = p * 40; b = 0;
+        r = 80 + p * 175; g = p * 20; b = 30 + p * 90;
       } else if (heat < 0.8) {
         const p = (heat - 0.5) / 0.3;
-        r = 255; g = 40 + p * 170; b = 0;
+        r = 255; g = 20 + p * 100; b = 120 + p * 60;
       } else {
         const p = (heat - 0.8) / 0.2;
-        r = 255; g = 210 + p * 45; b = p * 200;
+        r = 255; g = 120 + p * 110; b = 180 + p * 60;
       }
 
       const i = (py * LED_W + px) * 4;
@@ -89,7 +89,7 @@ function fillEmbers(buf, t) {
   }
 }
 
-// Ocean: deep blue shifting into teal foam crests
+// Ocean: deep plum shifting into pink, with pale pink foam crests
 function fillOcean(buf, t) {
   for (let py = 0; py < LED_H; py++) {
     for (let px = 0; px < LED_W; px++) {
@@ -103,13 +103,13 @@ function fillOcean(buf, t) {
       let r, g, b;
       if (depth < 0.4) {
         const p = depth / 0.4;
-        r = 0; g = 10 + p * 50; b = 50 + p * 110;
+        r = 40 + p * 120; g = p * 20; b = 25 + p * 65;
       } else if (depth < 0.75) {
         const p = (depth - 0.4) / 0.35;
-        r = p * 30; g = 60 + p * 130; b = 160 + p * 60;
+        r = 160 + p * 80; g = 20 + p * 70; b = 90 + p * 70;
       } else {
         const p = (depth - 0.75) / 0.25;
-        r = 30 + p * 200; g = 190 + p * 55; b = 220 + p * 35;
+        r = 240 + p * 15; g = 90 + p * 130; b = 160 + p * 75;
       }
 
       const i = (py * LED_W + px) * 4;
@@ -118,7 +118,7 @@ function fillOcean(buf, t) {
   }
 }
 
-// Midnight nebula: slow drifting cyan-to-violet clouds
+// Midnight nebula: slow drifting magenta-to-rose clouds
 function fillMidnight(buf, t) {
   for (let py = 0; py < LED_H; py++) {
     for (let px = 0; px < LED_W; px++) {
@@ -129,7 +129,7 @@ function fillMidnight(buf, t) {
       const n2 = random.noise3D(nx * 5 + 8, ny * 4 + 3, t * 0.09);
 
       const v = (n1 * 0.6 + n2 * 0.4) * 0.5 + 0.5;
-      const hue = 180 + v * 90; // cyan (180) → violet (270)
+      const hue = 310 + v * 40; // magenta (310) → rose (350)
       const [r, g, b] = hslToRgb(hue, 0.8, v * 0.38);
 
       const i = (py * LED_W + px) * 4;
