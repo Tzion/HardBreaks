@@ -6,14 +6,31 @@ import * as pixelize from './pixelize.js';
 import { toRGB, createPacket, remapToPhysicalLayout } from './frame.js';
 import fs from 'fs';
 import crackAnimation from './art/crack.js';
-import heartbreaksAnimation from './art/hardbreaks.js';
+import heartbreaksAnimation, { pinkSketch } from './art/hardbreaks.js';
 import ambientAnimation from './art/ambient.js';
 
-async function runSketchAnimation(sketchAnimation, settings) {
+// The first entry plays first; after that a random different one follows each time.
+const playlist = [
+    { name: 'hardbreaks pink', sketch: pinkSketch, minutes: 10 },
+    { name: 'ambient', sketch: ambientAnimation, minutes: 5 },
+];
+const FADE_MS = 1000; // fade out at the end of each animation, fade in at the start
+
+function pickNext(current) {
+    const others = playlist.filter(item => item !== current);
+    return others.length ? others[Math.floor(Math.random() * others.length)] : current;
+}
+
+async function runPlaylist(settings) {
     const [width, height] = settings.dimensions;
     const canvas = createCanvas(width, height);
 
-    const manager = await canvasSketch(sketchAnimation, {
+    let item = playlist[0];
+    let itemStart = Date.now();
+    let switching = false;
+    console.log(`Playing ${item.name} for ${item.minutes} min`);
+
+    const manager = await canvasSketch(item.sketch, {
         ...settings,
         canvas
     });
@@ -34,8 +51,28 @@ async function runSketchAnimation(sketchAnimation, settings) {
             await transmit.connect();
             return; // Skip this frame
         }
+        if (switching) return; // next sketch is still loading
+
+        const elapsed = Date.now() - itemStart;
+        const remaining = item.minutes * 60 * 1000 - elapsed;
+        if (remaining <= 0) {
+            switching = true;
+            item = pickNext(item);
+            console.log(`Playing ${item.name} for ${item.minutes} min`);
+            await manager.loadAndRun(item.sketch);
+            itemStart = Date.now();
+            switching = false;
+            return;
+        }
 
         manager.render();
+
+        // Fade through black between animations
+        const level = Math.min(1, elapsed / FADE_MS, remaining / FADE_MS);
+        if (level < 1) {
+            context.fillStyle = `rgba(0, 0, 0, ${1 - level})`;
+            context.fillRect(0, 0, width, height);
+        }
         // TODO AI: wrap into DEBUG flag default to false.
         // SAVE ONLY FOR DEBUGGING NOT PRODUCTION!!!
         // const outPath = 'last-frame.png';
@@ -60,4 +97,4 @@ const settings = {
     fps: 17
 };
 
-runSketchAnimation(heartbreaksAnimation, settings)
+runPlaylist(settings)
