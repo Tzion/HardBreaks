@@ -1,7 +1,7 @@
 #ifndef HELPER_H
 #define HELPER_H
 
-#if DEBUG
+#if VERBOSITY
   // Check if Serial.printf() is available (RP2040, ESP32, etc.)
   #if defined(ARDUINO_ARCH_RP2040) || defined(ESP32) || defined(ESP8266)
     #define printf(...) Serial.printf(__VA_ARGS__)

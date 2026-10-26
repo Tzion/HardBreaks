@@ -161,7 +161,9 @@ void receiveFrame()
       receivedBytes = 0;
       calculatedChecksum = 0;
       parseState = WAIT_DATA;
+#if VERBOSITY >= 2
       printf("Expecting %u bytes of data\n", expectedLength);
+#endif
       break;
 
     case WAIT_DATA:
@@ -186,17 +188,20 @@ void receiveFrame()
       break;
 
     case WAIT_CHECKSUM:
+      // Only show frames that arrived intact; a broken one flashes random colors
       if (byte == calculatedChecksum)
       {
         frameCount++;
+#if VERBOSITY >= 2
         printf("Frame %lu received OK (%u bytes) (checksum=0x%02X)\n", frameCount, expectedLength, byte);
+#endif
+        memcpy(leds, frameBuffer, expectedLength);
+        FastLED.show();
       }
       else
       {
         printf("Checksum error! Expected %u, got %u\n", calculatedChecksum, byte);
       }
-      memcpy(leds, frameBuffer, expectedLength);
-      FastLED.show();
       parseState = WAIT_MAGIC_1;
       break;
     }
