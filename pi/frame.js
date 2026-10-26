@@ -1,3 +1,6 @@
+// Per-frame logging, off unless DEBUG=1 or DEBUG=true (e.g. DEBUG=1 node pi/run.js); it slows the render loop
+const DEBUG = ['1', 'true'].includes(process.env.DEBUG);
+
 // Convert RGBA ImageData to RGB buffer (strip alpha)
 export function toRGB(imageData) {
     const { width, height, data } = imageData;
@@ -33,7 +36,7 @@ export function createPacket(rgbData) {
     for (let i = 0; i < rgbData.length; i++) {
         checksum = (checksum + rgbData[i]) & 0xFF;
     }
-    console.log(`createPacket: payload=${rgbData.length} bytes, checksum=0x${checksum.toString(16).padStart(2, '0')} (${checksum})`);
+    if (DEBUG) console.log(`createPacket: payload=${rgbData.length} bytes, checksum=0x${checksum.toString(16).padStart(2, '0')} (${checksum})`);
     return Buffer.concat([
         MAGIC,
         length,
@@ -158,7 +161,7 @@ export function remapImageToStrips(rgb, width, height) {
         globalStripIndex += group.strips;
     }
 
-    console.log(`Total: remapped ${globalStripIndex} strips, ${outputLEDIndex} LEDs`);
+    if (DEBUG) console.log(`Total: remapped ${globalStripIndex} strips, ${outputLEDIndex} LEDs`);
     return outputRGB;
 }
 
@@ -190,7 +193,7 @@ export function applyPhysicalFixes(remapped, height) {
 
         if (offset > 0) {
             // Add dummy pixels (zeros) at start
-            console.log(`  Adding ${offset} dummy pixels`);
+            if (DEBUG) console.log(`  Adding ${offset} dummy pixels`);
             writePos += offset * 3;
 
             // Copy full group
@@ -202,7 +205,7 @@ export function applyPhysicalFixes(remapped, height) {
         } else if (offset < 0) {
             // Skip pixels from source
             const skipPixels = Math.abs(offset);
-            console.log(`  Skipping ${skipPixels} pixels from source`);
+            if (DEBUG) console.log(`  Skipping ${skipPixels} pixels from source`);
             readPos += skipPixels * 3;
 
             // Copy reduced amount (group size minus skipped pixels)
@@ -220,7 +223,7 @@ export function applyPhysicalFixes(remapped, height) {
         }
     }
 
-    console.log(`Applied physical fixes: read ${readPos} bytes, wrote ${writePos} bytes (output size: ${output.length})`);
+    if (DEBUG) console.log(`Applied physical fixes: read ${readPos} bytes, wrote ${writePos} bytes (output size: ${output.length})`);
     return output;
 }
 

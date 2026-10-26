@@ -9,10 +9,13 @@ import crackAnimation from './art/crack.js';
 import heartbreaksAnimation, { pinkSketch } from './art/hardbreaks.js';
 import ambientAnimation from './art/ambient.js';
 
+// Debug output (per-frame logs, saving frames), off unless DEBUG=1 or DEBUG=true: DEBUG=1 node pi/run.js
+const DEBUG = ['1', 'true'].includes(process.env.DEBUG);
+
 // The first entry plays first; after that a random different one follows each time.
 const playlist = [
-    { name: 'hardbreaks pink', sketch: pinkSketch, minutes: 10 },
-    { name: 'ambient', sketch: ambientAnimation, minutes: 5 },
+    { name: 'hardbreaks pink', sketch: pinkSketch, minutes: 1 },
+    { name: 'ambient', sketch: ambientAnimation, minutes: 1 },
 ];
 const FADE_MS = 1000; // fade out at the end of each animation, fade in at the start
 
@@ -43,12 +46,21 @@ async function runPlaylist(settings) {
         console.error('Failed to connect to controller:', err.message);
     }
 
+    let reconnecting = false;
     setInterval(async () => {
+        if (reconnecting) return;
         // Check health before sending
         if (!transmit.isHealthy()) {
             console.warn('Connection unhealthy, reconnecting...');
-            await transmit.disconnect();
-            await transmit.connect();
+            reconnecting = true;
+            try {
+                await transmit.disconnect();
+                await transmit.connect();
+            } catch (err) {
+                console.error('Reconnect failed, retrying in 2 s:', err.message);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+            reconnecting = false;
             return; // Skip this frame
         }
         if (switching) return; // next sketch is still loading
@@ -73,15 +85,16 @@ async function runPlaylist(settings) {
             context.fillStyle = `rgba(0, 0, 0, ${1 - level})`;
             context.fillRect(0, 0, width, height);
         }
-        // TODO AI: wrap into DEBUG flag default to false.
-        // SAVE ONLY FOR DEBUGGING NOT PRODUCTION!!!
-        // const outPath = 'last-frame.png';
-        // try {
-        //     fs.writeFileSync(outPath, canvas.toBuffer('image/png'));
-        //     console.log(`Saved frame to ${outPath}`);
-        // } catch (err) {
-        //     console.error('Failed to save frame:', err);
-        // }
+        // Saving every frame is slow: only with DEBUG set, never in production
+        if (DEBUG) {
+            const outPath = 'last-frame.png';
+            try {
+                fs.writeFileSync(outPath, canvas.toBuffer('image/png'));
+                console.log(`Saved frame to ${outPath}`);
+            } catch (err) {
+                console.error('Failed to save frame:', err);
+            }
+        }
         const imageData = context.getImageData(0, 0, width, height);
         const downScaled = pixelize.scaleDown(imageData, 49, 39);
         const rgb = toRGB(downScaled);
