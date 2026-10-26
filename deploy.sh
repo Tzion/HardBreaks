@@ -54,14 +54,23 @@ restart() {
     ssh "$PI_HOST" "sudo systemctl restart $*"
 }
 
-# After every successful install the lockfile is copied to node_modules/.deployed-lock.
+# node_modules/.deployed-lock is the synced lockfile of the last successful install.
 # If the synced lockfile differs (or the last install never finished), install again.
-# npm ci installs exactly what the lockfile says and never rewrites it.
+# npm install only changes what's different, so canvas (compiled on the Pi, slow) isn't rebuilt
+# unless it has to be. The copy is taken before installing, because npm install may rewrite the lockfile.
 deploy_pi() {
     sync_code
-    ssh "$PI_HOST" "cd $PI_DIR && if ! cmp -s package-lock.json node_modules/.deployed-lock; then \
-        echo '==> dependencies changed, running npm ci' \
-        && npm ci && cp package-lock.json node_modules/.deployed-lock; fi"
+    ssh "$PI_HOST" bash -s -- "$PI_DIR" <<'EOF'
+set -e
+cd "$1"
+cmp -s package-lock.json node_modules/.deployed-lock && exit 0
+echo "==> dependencies changed, running npm install"
+cp package-lock.json /tmp/deployed-lock
+npm install
+# An interrupted install can leave canvas without its compiled binary
+node -e "require('canvas')" 2>/dev/null || { echo "==> canvas binary missing, rebuilding (slow)"; npm rebuild canvas; }
+mv /tmp/deployed-lock node_modules/.deployed-lock
+EOF
     restart hardbreaks
 }
 
