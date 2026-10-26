@@ -14,8 +14,8 @@ const DEBUG = ['1', 'true'].includes(process.env.DEBUG);
 
 // The first entry plays first; after that a random different one follows each time.
 const playlist = [
-    { name: 'hardbreaks pink', sketch: pinkSketch, minutes: 1 },
-    { name: 'ambient', sketch: ambientAnimation, minutes: 1 },
+    // { name: 'hardbreaks pink', sketch: pinkSketch, minutes: 7 },
+    { name: 'ambient', sketch: ambientAnimation, minutes: 7 },
 ];
 const FADE_MS = 1000; // fade out at the end of each animation, fade in at the start
 
