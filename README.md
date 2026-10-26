@@ -23,3 +23,13 @@ A beating heart, then it breaks—slowly filling the cracks, healing, growing bi
 
 - **Protect the Pi's SD card.** Shutting down means pulling the plug, which can corrupt the card. Turn on the read-only overlay: `sudo raspi-config` → Performance Options → Overlay File System → Yes (also write-protect the boot partition), then reboot. Writes go to RAM and are lost on reboot. To update the code, turn the overlay off, reboot, make the change, then turn it back on.
 - **Bring a spare.** Clone the finished card to a second SD card.
+
+## Debugging
+for DEBUG log set DEBUG=1 (env varaible of hardbreak service)
+
+useful logs:
+systemctl status hardbreaks                          # running? last few lines
+journalctl -u hardbreaks -f                          # follow live (Ctrl-C to stop)
+journalctl -u hardbreaks --since "-10 min"           # a time window
+systemctl show hardbreaks -p NRestarts               # how many times it restarted
+journalctl -u bt-speaker -f                          # the speaker watchdog
