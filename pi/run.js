@@ -10,6 +10,7 @@ import { fadeThroughBlack, crossfade, gather } from './transitions.js';
 import crackAnimation from './art/crack.js';
 import heartbreaksAnimation, { pinkSketch } from './art/hardbreaks.js';
 import ambientAnimation from './art/ambient.js';
+import { createQrSketch } from './art/qr.js';
 
 // Debug output (per-frame logs, saving frames), off unless DEBUG=1 or DEBUG=true: DEBUG=1 node pi/run.js
 const DEBUG = ['1', 'true'].includes(process.env.DEBUG);
@@ -17,10 +18,14 @@ const DEBUG = ['1', 'true'].includes(process.env.DEBUG);
 // The playlist (see pi/player.js): the first item plays first, then the order setting decides.
 // transitionIn is the transition used when switching to that item; otherwise the default below.
 const player = new Player([
-    { name: 'hardbreaks', sketch: heartbreaksAnimation, minutes: 3000, transitionIn: gather({ seconds: 10 }) },
+    // QR test: three looks, 20 s each, to find the one phones read best on the matrix
+    { name: 'hardbreaks', sketch: heartbreaksAnimation, minutes: 60*7, transitionIn: gather({ seconds: 1 }) },
+    { name: 'qr bright white', sketch: createQrSketch('https://hardbreaks.netlify.app'), minutes: 1 / 3 },
+    { name: 'qr dim white', sketch: createQrSketch('https://hardbreaks.netlify.app', { color: 'rgb(90, 90, 90)' }), minutes: 1 / 3 },
+    { name: 'qr inverted', sketch: createQrSketch('https://hardbreaks.netlify.app', { invert: true, color: 'rgb(140, 140, 140)' }), minutes: 1 / 3 },
 ], {
     size: [147, 117], // 3× the 49×39 LEDs: smooth edges after shrinking, without wasting CPU
-    order: 'shuffle',
+    order: 'in-order',
     transition: fadeThroughBlack({ seconds: 2 }),
 });
 
