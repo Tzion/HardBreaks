@@ -21,8 +21,8 @@ const player = new Player([
     // QR test: three looks, 20 s each, to find the one phones read best on the matrix
     { name: 'hardbreaks', sketch: heartbreaksAnimation, minutes: 60*7, transitionIn: gather({ seconds: 1 }) },
     { name: 'qr bright white', sketch: createQrSketch('https://hardbreaks.netlify.app'), minutes: 1 / 3 },
-    { name: 'qr dim white', sketch: createQrSketch('https://hardbreaks.netlify.app', { color: 'rgb(90, 90, 90)' }), minutes: 1 / 3 },
-    { name: 'qr inverted', sketch: createQrSketch('https://hardbreaks.netlify.app', { invert: true, color: 'rgb(140, 140, 140)' }), minutes: 1 / 3 },
+    { name: 'qr dim white', sketch: createQrSketch('https://hardbreaks.netlify.app', { color: 'rgb(212, 79, 79)' }), minutes: 1 / 3 },
+    { name: 'qr inverted', sketch: createQrSketch('https://hardbreaks.netlify.app', { invert: true, color: 'rgb(85, 32, 177)' }), minutes: 1 / 3 },
 ], {
     size: [147, 117], // 3× the 49×39 LEDs: smooth edges after shrinking, without wasting CPU
     order: 'in-order',
