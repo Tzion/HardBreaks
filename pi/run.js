@@ -3,7 +3,9 @@ import { createCanvas } from 'canvas';
 import * as transmit from './transmit.js';
 import { toRGB, createPacket, remapToPhysicalLayout } from './frame.js';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { Player } from './player.js';
+import { AudioPlayer } from './audio.js';
 import { fadeThroughBlack, crossfade, gather } from './transitions.js';
 import crackAnimation from './art/crack.js';
 import heartbreaksAnimation, { pinkSketch } from './art/hardbreaks.js';
@@ -15,16 +17,23 @@ const DEBUG = ['1', 'true'].includes(process.env.DEBUG);
 // The playlist (see pi/player.js): the first item plays first, then the order setting decides.
 // transitionIn is the transition used when switching to that item; otherwise the default below.
 const player = new Player([
-    { name: 'ambient pink', sketch: ambientAnimation, minutes: 7 , transitionIn: crossfade({ seconds: 20 }) },
-    { name: 'hardbreaks pink', sketch: pinkSketch, minutes: 3, transitionIn: gather({ seconds: 10 }) },
+    { name: 'hardbreaks', sketch: heartbreaksAnimation, minutes: 3000, transitionIn: gather({ seconds: 10 }) },
 ], {
     size: [147, 117], // 3× the 49×39 LEDs: smooth edges after shrinking, without wasting CPU
     order: 'shuffle',
     transition: fadeThroughBlack({ seconds: 2 }),
 });
 
+// Audio tracks from audio/ (see pi/audio.js): shuffled, with a random pause between tracks
+const audio = new AudioPlayer({
+    dir: fileURLToPath(new URL('../audio', import.meta.url)),
+    pauseMinS: 60,
+    pauseMaxS: 60,
+});
+
 async function run(fps) {
     await player.start();
+    audio.start();
 
     try {
         await transmit.connect();

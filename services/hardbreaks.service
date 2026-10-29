@@ -9,6 +9,8 @@ StartLimitIntervalSec=0
 Type=simple
 User=pi
 WorkingDirectory=/home/pi/HardBreaks
+# For the audio player: pi's PipeWire, started by the desktop's automatic login, is reached through this directory
+Environment=XDG_RUNTIME_DIR=/run/user/1000
 ExecStart=/usr/bin/node /home/pi/HardBreaks/pi/run.js
 
 # wait 10 seconds if crashes, then restart
