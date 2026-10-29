@@ -33,3 +33,6 @@ journalctl -u hardbreaks -f                          # follow live (Ctrl-C to st
 journalctl -u hardbreaks --since "-10 min"           # a time window
 systemctl show hardbreaks -p NRestarts               # how many times it restarted
 journalctl -u bt-speaker -f                          # the speaker watchdog
+bluetoothctl devices Connected                       # connected Bluetooth devices (empty = none)
+bluetoothctl show | grep -E "Powered|PowerState"     # is the Pi's Bluetooth on?
+journalctl -u bluetooth -u bt-speaker --since "-20 min" -p info   # Bluetooth logs, last 20 min, info level and more severe (incl. warnings)
