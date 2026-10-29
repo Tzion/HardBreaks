@@ -27,8 +27,8 @@ const player = new Player([
 // Audio tracks from audio/ (see pi/audio.js): shuffled, with a random pause between tracks
 const audio = new AudioPlayer({
     dir: fileURLToPath(new URL('../audio', import.meta.url)),
-    pauseMinS: 60,
-    pauseMaxS: 60,
+    pauseMinS: 73,
+    pauseMaxS: 144,
 });
 
 async function run(fps) {

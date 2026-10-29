@@ -36,6 +36,3 @@ creative-coding-course/node_modules/
 .netlify
 
 .claude/
-
-# Audio tracks for the audio player: copied to the Pi by deploy.sh, too big for git
-/audio/
