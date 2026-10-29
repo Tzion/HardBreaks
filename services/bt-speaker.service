@@ -1,5 +1,8 @@
 # place in  /etc/systemd/system/bt-speaker.service
-# Keeps the Bluetooth speaker connected; reconnects whenever it comes back on.
+# Keeps a Bluetooth speaker connected; reconnects whenever it comes back on.
+# If no known speaker connects for a while, it pairs any audio device placed right next to the Pi, so a
+# speaker can be replaced in the field: switch the new one on and put it close to the Pi. See bt-speaker.sh.
+# Settings (default speaker MAC etc.) are in services/bt-speaker.env.
 #
 # One-time setup, with the read-only overlay OFF (pairing is saved in /var/lib/bluetooth
 # and would be lost on reboot otherwise):
@@ -9,7 +12,7 @@
 #        trust <MAC>
 #        connect <MAC>
 #        quit
-#   2. Put the MAC in SPEAKER_MAC below and commit it, so every deploy installs the right one.
+#   2. Put the MAC in SPEAKER_MAC in services/bt-speaker.env.
 #   3. ./deploy.sh services   (from the Mac)
 #   4. Check: journalctl -u bt-speaker -f   (should say "speaker connected")
 #   5. Turn the speaker off and on and confirm it reconnects, then reboot the Pi and confirm again.
@@ -23,7 +26,6 @@ StartLimitIntervalSec=0
 
 [Service]
 Type=simple
-Environment=SPEAKER_MAC=40:EF:4C:76:C1:E0
 ExecStart=/bin/bash /home/pi/HardBreaks/services/bt-speaker.sh
 
 # wait 10 seconds if crashes, then restart
