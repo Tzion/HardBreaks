@@ -29,15 +29,23 @@ function generateConfig() {
     CRACK_NOISE_AMP_MAX: 45,
     CRACK_COLOR: 'rgba(0,0,0,0.95)', // darker fracture color
     // number of full beats before halting: 10-67 s of beating, rounded to whole beats at this BPM
-    BEATS_BEFORE_HALTING: Math.max(1, Math.round(random.range(10, 67) * BPM / 60)),
-    CRACK_DURATION_MS: random.rangeFloor(4000, 22000),  // duration of crack growth animation
-    HALT_DURATION_MS: random.rangeFloor(500, 3000),   // how long to stay halted (ms)
-    HEALING_DURATION_MS: random.rangeFloor(10000, 33000), // duration of healing (crack fade-out)
-    MAX_SMALL_CYCLES: random.rangeFloor(2, 6),       // number of small cycles before big cycle reset
+    BEATS_BEFORE_HALTING: Math.max(1, Math.round(random.range(10, 47) * BPM / 60)),
+    CRACK_DURATION_MS: random.rangeFloor(4000, 18000),  // duration of crack growth animation
+    HALT_DURATION_MS: random.rangeFloor(500, 2000),   // how long to stay halted (ms)
+    HEALING_DURATION_MS: random.rangeFloor(10000, 22000), // duration of healing (crack fade-out)
+    MAX_SMALL_CYCLES: random.rangeFloor(2, 7),       // number of small cycles before big cycle reset
     SCAR_FADE_DURATION_MS: random.rangeFloor(3000, 8000), // time to fade out previous cycle's displacement/color
     BASE_SIZE_FACTOR: random.range(0.1, 0.47),   // base heart size as fraction of canvas
-    CRACK_LINE_WIDTH_FACTOR: random.range(0.03, 0.18), // crack thickness
-    COMPLETE_DURATION_MS: 4321, // pause duration at completion before reset
+    CRACK_LINE_WIDTH_FACTOR: random.range(0.05, 0.18), // crack thickness
+    COMPLETE_DURATION_MS: 3210, // pause duration at completion before reset
+
+    // Healing (scar) color = the heart color shifted by these two amounts. The sign is random, so it can go
+    // either way. Wider/larger ranges make scars that stand out more; smaller ones keep them close to the heart.
+    HEAL_HUE_SHIFT: random.range(50, 140) * random.sign(),          // degrees around the color wheel
+    HEAL_LIGHTNESS_SHIFT: random.range(0.05, 0.2) * random.sign(), // + lighter, - darker (lightness is 0-1)
+    // How visible healed scars stay, in the healing color, until the big cycle resets:
+    // 0 = they fade away completely, 1 = as visible as right after healing
+    SCAR_REMAIN: random.range(0.04, 0.8),
   };
 }
 
@@ -75,6 +83,16 @@ const HEART_PALETTES = [
   () => ({ r: random.rangeFloor(180, 220), g: random.rangeFloor(10, 30), b: random.rangeFloor(50, 90) }),
   // Violet
   () => ({ r: random.rangeFloor(140, 190), g: random.rangeFloor(60, 100), b: random.rangeFloor(180, 230) }),
+  // Golds
+  () => ({ r: 255, g: random.rangeFloor(170, 220), b: random.rangeFloor(0, 40) }),
+  // Greens
+  () => ({ r: random.rangeFloor(60, 140), g: random.rangeFloor(200, 256), b: random.rangeFloor(20, 80) }),
+  // Teals
+  () => ({ r: random.rangeFloor(0, 40), g: random.rangeFloor(180, 230), b: random.rangeFloor(170, 230) }),
+  // Sky blues
+  () => ({ r: random.rangeFloor(20, 80), g: random.rangeFloor(100, 170), b: random.rangeFloor(220, 256) }),
+  // Royal blues
+  () => ({ r: random.rangeFloor(40, 80), g: random.rangeFloor(40, 90), b: random.rangeFloor(200, 256) }),
 ];
 
 function generateHeartColor(palettes) {
@@ -89,6 +107,29 @@ function generateCrackColor(heartColor) {
     g: 0,
     b: 0
   };
+}
+
+function rgbToHsl({ r, g, b }) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, d = max - min;
+  if (d === 0) return { h: 0, s: 0, l };
+  const s = d / (1 - Math.abs(2 * l - 1));
+  const h = 60 * (max === r ? ((g - b) / d + 6) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4);
+  return { h, s, l };
+}
+
+function hslToRgb({ h, s, l }) {
+  const c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = l - c / 2;
+  const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+  return { r: (r + m) * 255, g: (g + m) * 255, b: (b + m) * 255 };
+}
+
+// Healing material: the heart color, shifted by CONFIG.HEAL_HUE_SHIFT and CONFIG.HEAL_LIGHTNESS_SHIFT
+function generateHealColor(heartColor) {
+  const { h, s, l } = rgbToHsl(heartColor);
+  const hue = (h + CONFIG.HEAL_HUE_SHIFT + 360) % 360;
+  const lightness = Math.min(0.85, Math.max(0.15, l + CONFIG.HEAL_LIGHTNESS_SHIFT)); // keep it visible on the LEDs
+  return hslToRgb({ h: hue, s, l: lightness });
 }
 
 function colorToRgbString(color) {
@@ -438,7 +479,31 @@ function updateState(state, stateStartTime, elapsedMs, beatsSinceOffset, beatPha
 /**
  * Render based on current state
  */
-function renderState(context, width, height, state, elapsedMs, stateStartTime, baseSize, beatOffset, crackPaths, boundaryCache, accumulatedDisplacements, fadingCracks, scarFadeStartTime, heartColorString, crackColorString) {
+// Healed scars in the healing color: the older ones at CONFIG.SCAR_REMAIN, the newest fading down to it
+// from 0.8 (right after healing) over the scar fade. Call with the context already clipped to the heart.
+function drawScars(context, scars, fadingCracks, scarFadeAmount, healColorString) {
+  context.globalAlpha = CONFIG.SCAR_REMAIN;
+  scars.forEach(crack => crack.drawHealing(context, 1.0, healColorString));
+  context.globalAlpha = CONFIG.SCAR_REMAIN + (0.8 - CONFIG.SCAR_REMAIN) * scarFadeAmount;
+  fadingCracks.forEach(crack => crack.drawHealing(context, 1.0, healColorString));
+  context.globalAlpha = 1;
+}
+
+// Draw the scars clipped to the heart (with its accumulated displacement) and scaled with it
+function drawScarsInHeart(context, cx, cy, size, baseSize, boundaryCache, accumulatedDisplacements, scars, fadingCracks, scarFadeAmount, healColorString) {
+  if (scars.length === 0 && fadingCracks.length === 0) return;
+  context.save();
+  buildHeartPathWithAccumulatedDisplacement(context, cx, cy, size, boundaryCache, accumulatedDisplacements, baseSize);
+  context.clip();
+  const scale = size / baseSize;
+  context.translate(cx, cy);
+  context.scale(scale, scale);
+  context.translate(-cx, -cy);
+  drawScars(context, scars, fadingCracks, scarFadeAmount, healColorString);
+  context.restore();
+}
+
+function renderState(context, width, height, state, elapsedMs, stateStartTime, baseSize, beatOffset, crackPaths, boundaryCache, accumulatedDisplacements, fadingCracks, scars, scarFadeStartTime, heartColorString, crackColorString, healColorString) {
   // Background
   context.fillStyle = 'black';
   context.fillRect(0, 0, width, height);
@@ -535,13 +600,8 @@ function renderState(context, width, height, state, elapsedMs, stateStartTime, b
         context.scale(scaleFactor, scaleFactor);
         context.translate(-cx, -cy);
 
-        // Draw fading healing material
-        const healingAlpha = scarFadeAmount * 0.8; // fade opacity
-        context.globalAlpha = healingAlpha;
-
-        fadingCracks.forEach(crack => {
-          crack.drawHealing(context, 1.0); // fully healed
-        });
+        // Draw the scars, the newest one fading down to CONFIG.SCAR_REMAIN
+        drawScars(context, scars, fadingCracks, scarFadeAmount, healColorString);
 
         context.restore();
       } else {
@@ -552,6 +612,7 @@ function renderState(context, width, height, state, elapsedMs, stateStartTime, b
         } else {
           drawHeart(context, cx, cy, currentHeartSize);
         }
+        drawScarsInHeart(context, cx, cy, currentHeartSize, baseSize, boundaryCache, accumulatedDisplacements, scars, fadingCracks, scarFadeAmount, healColorString);
       }
 
       break;
@@ -564,6 +625,7 @@ function renderState(context, width, height, state, elapsedMs, stateStartTime, b
       } else {
         drawHeart(context, width / 2, height / 2, baseSize);
       }
+      drawScarsInHeart(context, width / 2, height / 2, baseSize, baseSize, boundaryCache, accumulatedDisplacements, scars, fadingCracks, scarFadeAmount, healColorString);
       break;
     }
     case STATES.CRACKING: {
@@ -583,6 +645,7 @@ function renderState(context, width, height, state, elapsedMs, stateStartTime, b
         buildHeartPath(context, width / 2, height / 2, baseSize);
       }
       context.clip();
+      drawScars(context, scars, fadingCracks, scarFadeAmount, healColorString);
       const timeInState = elapsedMs - stateStartTime;
       const progress = Math.min(1, timeInState / CONFIG.CRACK_DURATION_MS);
       context.strokeStyle = crackColorString;
@@ -613,8 +676,9 @@ function renderState(context, width, height, state, elapsedMs, stateStartTime, b
       }
       context.clip();
 
-      // Draw healing material (yellow fill growing along cracks)
-      crackPaths.forEach(c => c.drawHealing(context, healProgress));
+      // Earlier scars, then the healing material growing along the current cracks
+      drawScars(context, scars, fadingCracks, scarFadeAmount, healColorString);
+      crackPaths.forEach(c => c.drawHealing(context, healProgress, healColorString));
 
       // Draw fading cracks on top of healing material
       const crackAlpha = Math.max(0, 1 - healProgress * 1.5); // fade faster than heal grows
@@ -637,6 +701,7 @@ function renderState(context, width, height, state, elapsedMs, stateStartTime, b
       } else {
         drawHeart(context, width / 2, height / 2, baseSize);
       }
+      drawScarsInHeart(context, width / 2, height / 2, baseSize, baseSize, boundaryCache, accumulatedDisplacements, scars, fadingCracks, scarFadeAmount, healColorString);
       break;
     }
   }
@@ -693,6 +758,7 @@ const createSketch = (palettes) => ({ width, height }) => {
 
   // Scar fade tracking (for smooth transition after healing)
   let fadingCracks = [];  // cracks from previous cycle that are fading out
+  let scars = [];         // healed cracks of earlier small cycles, drawn until the big cycle resets
   let scarFadeStartTime = 0; // when the scar fade started
 
   // Cycle tracking
@@ -704,6 +770,7 @@ const createSketch = (palettes) => ({ width, height }) => {
   let crackColor = generateCrackColor(heartColor);
   let heartColorString = colorToRgbString(heartColor);
   let crackColorString = colorToRgbaString(crackColor, 0.95);
+  let healColorString = colorToRgbString(generateHealColor(heartColor));
 
   return ({ context, width, height }) => {
     const baseSize = Math.min(width, height) * CONFIG.BASE_SIZE_FACTOR;
@@ -735,6 +802,9 @@ const createSketch = (palettes) => ({ width, height }) => {
         console.log('Big cycle complete - resetting to symmetric heart');
         smallCycleCount = 0;
         accumulatedDisplacements = [];
+        scars = [];
+        fadingCracks = [];
+        scarFadeStartTime = 0;
         boundaryCache = null;
 
         // Regenerate CONFIG with new random parameters
@@ -745,12 +815,13 @@ const createSketch = (palettes) => ({ width, height }) => {
         crackColor = generateCrackColor(heartColor);
         heartColorString = colorToRgbString(heartColor);
         crackColorString = colorToRgbaString(crackColor, 0.95);
+        healColorString = colorToRgbString(generateHealColor(heartColor));
 
         // Generate new random heart shape parameters
         const shapeParams = generateHeartShapeParams();
         ({ width: heartShape_width, roundness: heartShape_roundness, bottom: heartShape_bottom } = shapeParams);
 
-        console.log(`New colors - Heart: ${heartColorString}, Crack: ${crackColorString}`);
+        console.log(`New colors - Heart: ${heartColorString}, Crack: ${crackColorString}, Healing: ${healColorString}`);
         console.log(`New heart shape - width: ${heartShape_width.toFixed(2)}, roundness: ${heartShape_roundness.toFixed(2)}, bottom: ${heartShape_bottom.toFixed(2)}`);
         console.log(`New config - BPM: ${CONFIG.BPM}, BASE_SIZE_FACTOR: ${CONFIG.BASE_SIZE_FACTOR.toFixed(3)}, CRACK_LINE_WIDTH_FACTOR: ${CONFIG.CRACK_LINE_WIDTH_FACTOR.toFixed(3)}`);
       }
@@ -800,6 +871,7 @@ const createSketch = (palettes) => ({ width, height }) => {
 
 
         // Store cracks for fading
+        scars.push(...fadingCracks); // in case the previous one is still fading
         fadingCracks = crackPaths.slice(); // copy array
         scarFadeStartTime = elapsedMs;
 
@@ -837,13 +909,14 @@ const createSketch = (palettes) => ({ width, height }) => {
     if (fadingCracks.length > 0 && scarFadeStartTime > 0) {
       const fadeProgress = Math.min(1, (elapsedMs - scarFadeStartTime) / CONFIG.SCAR_FADE_DURATION_MS);
       if (fadeProgress >= 1) {
+        scars.push(...fadingCracks); // faded down to CONFIG.SCAR_REMAIN: it stays as a scar
         fadingCracks = [];
         scarFadeStartTime = 0;
       }
     }
 
     // Render current state
-    renderState(context, width, height, currentState, elapsedMs, stateStartTime, baseSize, beatOffset, crackPaths, boundaryCache, accumulatedDisplacements, fadingCracks, scarFadeStartTime, heartColorString, crackColorString);
+    renderState(context, width, height, currentState, elapsedMs, stateStartTime, baseSize, beatOffset, crackPaths, boundaryCache, accumulatedDisplacements, fadingCracks, scars, scarFadeStartTime, heartColorString, crackColorString, healColorString);
   };
 };
 

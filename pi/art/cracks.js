@@ -50,7 +50,7 @@ export class Crack {
   }
 
   // Draw healing material growing along crack path
-  drawHealing(context, healProgress) {
+  drawHealing(context, healProgress, color = 'rgb(255, 220, 100)') {
     if (healProgress <= 0) return;
 
     const crackWidth = this.baseSize * this.CONFIG.CRACK_LINE_WIDTH_FACTOR;
@@ -68,7 +68,7 @@ export class Crack {
     }
 
     context.save();
-    context.strokeStyle = 'rgb(255, 220, 100)'; // yellow healing material
+    context.strokeStyle = color; // healing material
     context.lineWidth = width;
     context.lineCap = 'round';
     context.lineJoin = 'round';
