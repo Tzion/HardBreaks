@@ -62,37 +62,15 @@ const PINK_PALETTES = [
   () => ({ r: random.rangeFloor(240, 255), g: random.rangeFloor(40, 90), b: random.rangeFloor(140, 180) }),
 ];
 
-// Vibrant heart colors with more variety
+// Rainbow: one of these colors, each equally likely, give or take 12° of hue, always vivid
+// (full color, medium brightness). Hues: red, orange, yellow, green, cyan, blue, violet, pink
+const RAINBOW_HUES = [0, 30, 55, 120, 180, 220, 270, 320];
 const HEART_PALETTES = [
-  // Classic reds
-  () => ({ r: random.rangeFloor(200, 255), g: random.rangeFloor(10, 40), b: random.rangeFloor(40, 80) }),
-  () => ({ r: random.rangeFloor(180, 230), g: random.rangeFloor(20, 50), b: random.rangeFloor(20, 60) }),
-  ...PINK_PALETTES,
-  // Oranges
-  () => ({ r: random.rangeFloor(230, 255), g: random.rangeFloor(80, 150), b: random.rangeFloor(0, 60) }),
-  () => ({ r: random.rangeFloor(255, 255), g: random.rangeFloor(120, 180), b: random.rangeFloor(30, 80) }),
-  // Deep purples
-  () => ({ r: random.rangeFloor(120, 180), g: random.rangeFloor(20, 60), b: random.rangeFloor(140, 200) }),
-  () => ({ r: random.rangeFloor(100, 150), g: random.rangeFloor(30, 70), b: random.rangeFloor(160, 220) }),
-  // Magentas
-  () => ({ r: random.rangeFloor(200, 255), g: random.rangeFloor(0, 80), b: random.rangeFloor(150, 220) }),
-  () => ({ r: random.rangeFloor(220, 255), g: random.rangeFloor(20, 60), b: random.rangeFloor(180, 240) }),
-  // Coral/Salmon
-  () => ({ r: random.rangeFloor(240, 255), g: random.rangeFloor(100, 140), b: random.rangeFloor(100, 130) }),
-  // Crimson
-  () => ({ r: random.rangeFloor(180, 220), g: random.rangeFloor(10, 30), b: random.rangeFloor(50, 90) }),
-  // Violet
-  () => ({ r: random.rangeFloor(140, 190), g: random.rangeFloor(60, 100), b: random.rangeFloor(180, 230) }),
-  // Golds
-  () => ({ r: 255, g: random.rangeFloor(170, 220), b: random.rangeFloor(0, 40) }),
-  // Greens
-  () => ({ r: random.rangeFloor(60, 140), g: random.rangeFloor(200, 256), b: random.rangeFloor(20, 80) }),
-  // Teals
-  () => ({ r: random.rangeFloor(0, 40), g: random.rangeFloor(180, 230), b: random.rangeFloor(170, 230) }),
-  // Sky blues
-  () => ({ r: random.rangeFloor(20, 80), g: random.rangeFloor(100, 170), b: random.rangeFloor(220, 256) }),
-  // Royal blues
-  () => ({ r: random.rangeFloor(40, 80), g: random.rangeFloor(40, 90), b: random.rangeFloor(200, 256) }),
+  () => hslToRgb({
+    h: (random.pick(RAINBOW_HUES) + random.range(-12, 12) + 360) % 360,
+    s: random.range(0.85, 1),
+    l: random.range(0.45, 0.55),
+  }),
 ];
 
 function generateHeartColor(palettes) {
